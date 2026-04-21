@@ -6,332 +6,1605 @@
 <meta name="robots" content="noindex">
 <title>Laurence Localhost v2 — Turner Foundry (read-only mirror)</title>
 <style>
-  :root { --bg:#0a0a0f; --card:#12121a; --card-hi:#1a1a25; --text:#e2e8f0; --dim:#94a3b8;
-          --muted:#64748b; --accent:#6366f1; --foundry-a:#b45309; --foundry-b:#92400e;
-          --border:#1e293b; }
-  * { margin:0; padding:0; box-sizing:border-box; }
-  body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;
-         background:var(--bg); color:var(--text); min-height:100vh; line-height:1.45; }
-  header { padding:20px 28px; border-bottom:1px solid var(--border); background:#0f0f17; }
-  h1 { font-size:22px; font-weight:700; display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
-  h1 .icon { color:var(--foundry-a); font-size:24px; }
-  h1 .accent { color:var(--accent); }
-  .foundry-badge { display:inline-block; padding:3px 10px; border-radius:4px; font-size:10px;
-    font-weight:700; background:linear-gradient(135deg,var(--foundry-a),var(--foundry-b));
-    color:#fef3c7; letter-spacing:1px; text-transform:uppercase; border:1px solid #78350f;
-    box-shadow:0 0 8px rgba(180,83,9,0.25); }
-  .ro-badge { display:inline-block; padding:3px 10px; border-radius:4px; font-size:10px;
-    font-weight:700; background:rgba(148,163,184,0.12); color:var(--dim);
-    letter-spacing:1px; text-transform:uppercase; border:1px solid var(--border); }
-  .banner { padding:14px 28px; background:rgba(180,83,9,0.07);
-    border-bottom:1px solid rgba(180,83,9,0.2); font-size:13px; color:#fcd34d; }
-  .banner strong { color:#fde68a; }
-  .banner code { background:rgba(0,0,0,0.35); padding:1px 6px; border-radius:3px; font-size:12px; }
-  main { padding:24px 28px; display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:14px; }
-  .card { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:16px;
-    transition:background 0.15s, border-color 0.15s; }
-  .card:hover { background:var(--card-hi); border-color:#334155; }
-  .badges { margin-bottom:8px; display:flex; flex-wrap:wrap; gap:6px; }
-  .badge { padding:2px 8px; border-radius:4px; font-size:11px; font-weight:600;
-    background:rgba(99,102,241,0.12); border:1px solid rgba(99,102,241,0.3); color:var(--accent); }
-  .card h3 { font-size:15px; margin-bottom:6px; color:var(--text); }
-  .card p { font-size:13px; color:var(--dim);
-    display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
-  .card p:empty::before { content:'—'; color:var(--muted); }
-  footer { padding:24px 28px; color:var(--muted); font-size:12px; text-align:center; border-top:1px solid var(--border); }
-  footer a { color:var(--accent); text-decoration:none; }
-  footer a:hover { text-decoration:underline; }
+  :root {
+    --bg-primary: #0a0a0f; --bg-secondary: #0f0f17;
+    --bg-card: #12121a; --bg-card-hover: #1a1a25;
+    --accent: #6366f1; --accent-dim: #4f46e5;
+    --accent-glow: rgba(99, 102, 241, 0.15);
+    --danger: #ef4444; --warning: #f59e0b; --success: #22c55e;
+    --success-dim: rgba(34, 197, 94, 0.15);
+    --text-primary: #e2e8f0; --text-secondary: #94a3b8; --text-muted: #64748b;
+    --border: #1e293b; --border-light: #334155;
+    --foundry-a: #b45309; --foundry-b: #92400e;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    background: var(--bg-primary); color: var(--text-primary); min-height: 100vh;
+  }
+
+  /* Task Manager (cosmetic in mirror) */
+  .task-manager {
+    background: #09090e; border-bottom: 2px solid var(--accent);
+    position: sticky; top: 0; z-index: 200;
+    box-shadow: 0 2px 20px rgba(99,102,241,0.15);
+  }
+  .tm-header {
+    display: flex; align-items: center; gap: 12px;
+    padding: 8px 16px; flex-wrap: wrap;
+  }
+  .tm-title {
+    font-size: 12px; font-weight: 700; color: var(--accent);
+    letter-spacing: 1px; text-transform: uppercase; white-space: nowrap;
+  }
+  .tm-summary { display: flex; gap: 6px; flex-shrink: 0; }
+  .tm-pill {
+    padding: 2px 10px; border-radius: 20px; font-size: 11px;
+    font-weight: 700; border: 1px solid; white-space: nowrap;
+  }
+  .tm-running  { background: var(--success-dim); border-color: rgba(34,197,94,0.3); color: var(--success); }
+  .tm-stopped  { background: rgba(148,163,184,0.08); border-color: var(--border); color: var(--text-muted); }
+  .tm-conflict { background: var(--success-dim); border-color: rgba(34,197,94,0.3); color: var(--success); }
+  .tm-actions { display: flex; gap: 6px; margin-left: auto; }
+  .tm-btn {
+    padding: 5px 12px; border-radius: 6px; font-size: 12px; font-weight: 600;
+    border: 1px solid; white-space: nowrap; opacity: 0.45; cursor: not-allowed;
+    background: rgba(148,163,184,0.08); border-color: var(--border); color: var(--text-muted);
+  }
+
+  /* Header */
+  header { background: var(--bg-secondary); border-bottom: 1px solid var(--border); padding: 16px 24px; }
+  .header-top { display: flex; align-items: center; gap: 16px; margin-bottom: 12px; flex-wrap: wrap; }
+  .header-top h1 {
+    font-size: 20px; font-weight: 700; color: var(--text-primary);
+    display: flex; align-items: center; gap: 8px; white-space: nowrap; flex-wrap: wrap;
+  }
+  .header-top h1 .accent { color: var(--accent); }
+  .header-top h1 .icon { color: var(--foundry-a); font-size: 22px; }
+  .foundry-badge {
+    display: inline-block; padding: 3px 10px; border-radius: 4px; font-size: 10px;
+    font-weight: 700; background: linear-gradient(135deg, var(--foundry-a), var(--foundry-b));
+    color: #fef3c7; letter-spacing: 1px; text-transform: uppercase;
+    border: 1px solid #78350f; box-shadow: 0 0 8px rgba(180,83,9,0.25);
+  }
+  .ro-badge {
+    display: inline-block; padding: 3px 10px; border-radius: 4px; font-size: 10px;
+    font-weight: 700; background: rgba(148,163,184,0.12); color: var(--text-secondary);
+    letter-spacing: 1px; text-transform: uppercase; border: 1px solid var(--border);
+  }
+
+  .controls { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; width: 100%; }
+  .search-input {
+    flex: 1; min-width: 200px; padding: 8px 14px;
+    background: var(--bg-primary); border: 1px solid var(--border);
+    border-radius: 8px; color: var(--text-primary); font-size: 14px; outline: none;
+  }
+  .search-input:focus { border-color: var(--accent); }
+  .search-input::placeholder { color: var(--text-muted); }
+  select {
+    padding: 8px 12px; background: var(--bg-primary); border: 1px solid var(--border);
+    border-radius: 8px; color: var(--text-primary); font-size: 14px; cursor: pointer;
+  }
+
+  /* Banner */
+  .banner {
+    padding: 10px 24px; background: rgba(180,83,9,0.08);
+    border-bottom: 1px solid rgba(180,83,9,0.2); font-size: 13px; color: #fcd34d;
+  }
+  .banner strong { color: #fde68a; }
+  .banner a { color: var(--accent); text-decoration: none; border-bottom: 1px dotted var(--accent); }
+  .banner a:hover { color: var(--text-primary); border-color: var(--text-primary); }
+
+  /* Stats */
+  .stats-bar {
+    display: flex; gap: 20px; padding: 12px 24px;
+    background: var(--bg-secondary); border-bottom: 1px solid var(--border);
+  }
+  .stat { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text-secondary); }
+  .stat-value { font-weight: 700; color: var(--text-primary); font-size: 16px; }
+  .stat-value.mirrored { color: var(--warning); }
+
+  /* Grid */
+  main {
+    padding: 24px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 16px;
+  }
+
+  /* Card */
+  .card {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 12px; overflow: hidden; transition: all 0.2s;
+    display: flex; flex-direction: column;
+  }
+  .card:hover {
+    border-color: var(--border-light); background: var(--bg-card-hover);
+    transform: translateY(-1px); box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+  }
+
+  .card-thumb {
+    height: 160px; background: var(--bg-primary);
+    position: relative; overflow: hidden;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .card-thumb img { width: 100%; height: 100%; object-fit: cover; }
+  .card-thumb .placeholder { font-size: 48px; opacity: 0.25; color: var(--accent); font-weight: 700; letter-spacing: -2px; }
+  .card-thumb .framework-icon {
+    position: absolute; top: 8px; left: 8px;
+    font-size: 14px; font-weight: 700; background: rgba(0,0,0,0.7);
+    padding: 3px 8px; border-radius: 6px; color: var(--text-primary);
+    border: 1px solid rgba(255,255,255,0.08);
+  }
+  .status-dot {
+    position: absolute; top: 10px; right: 10px;
+    width: 10px; height: 10px; border-radius: 50%;
+    background: var(--text-muted); border: 2px solid var(--bg-card);
+    opacity: 0.5;
+  }
+
+  .card-body { padding: 14px; flex: 1; display: flex; flex-direction: column; }
+  .card-badges { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+  .badge {
+    padding: 2px 8px; border-radius: 4px; font-size: 11px;
+    font-weight: 600; border: 1px solid;
+  }
+  .badge-framework { background: var(--accent-glow); border-color: rgba(99,102,241,0.3); color: var(--accent); }
+  .badge-nextjs    { background: rgba(0,0,0,0.3); border-color: #333; color: #fff; }
+  .badge-vite      { background: rgba(189,147,249,0.15); border-color: rgba(189,147,249,0.3); color: #bd93f9; }
+  .badge-react     { background: rgba(97,218,251,0.15); border-color: rgba(97,218,251,0.3); color: #61dafb; }
+  .badge-express   { background: rgba(34,197,94,0.15); border-color: rgba(34,197,94,0.3); color: #22c55e; }
+  .badge-electron  { background: rgba(148,163,184,0.15); border-color: rgba(148,163,184,0.3); color: #94a3b8; }
+  .badge-python    { background: rgba(250,204,21,0.15); border-color: rgba(250,204,21,0.3); color: #facc15; }
+  .badge-django    { background: rgba(16,185,129,0.15); border-color: rgba(16,185,129,0.3); color: #10b981; }
+  .badge-docker    { background: rgba(59,130,246,0.15); border-color: rgba(59,130,246,0.3); color: #3b82f6; }
+  .badge-static    { background: rgba(148,163,184,0.1);  border-color: rgba(148,163,184,0.2); color: #94a3b8; }
+  .badge-nodered   { background: rgba(239,68,68,0.15);  border-color: rgba(239,68,68,0.3); color: #ef4444; }
+  .badge-xampp     { background: rgba(251,146,60,0.15); border-color: rgba(251,146,60,0.3); color: #fb923c; }
+  .badge-flask     { background: rgba(148,163,184,0.15); border-color: rgba(148,163,184,0.3); color: #cbd5e1; }
+  .badge-readme    { background: rgba(250,204,21,0.08); border-color: rgba(250,204,21,0.2); color: #facc15; }
+  .badge-port {
+    background: rgba(148,163,184,0.1); border-color: var(--border);
+    color: var(--text-secondary); font-family: 'Courier New', monospace;
+  }
+
+  .card-name { font-size: 16px; font-weight: 600; margin-bottom: 4px; color: var(--text-primary); }
+  .card-desc {
+    font-size: 13px; color: var(--text-secondary); line-height: 1.4; flex: 1;
+    display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
+  }
+  .card-desc:empty::before { content: '—'; color: var(--text-muted); }
+
+  .recovery-panel {
+    padding: 10px 14px; border-top: 1px solid rgba(99,102,241,0.12);
+    background: rgba(99,102,241,0.03);
+  }
+  .recovery-btns { display: flex; gap: 6px; flex-wrap: wrap; }
+  .recovery-open, .recovery-start, .recovery-term {
+    padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 600;
+    border: 1px solid; transition: all 0.2s; white-space: nowrap;
+  }
+  .recovery-open  { border-color: var(--accent); background: var(--accent-glow); color: var(--accent); flex: 1; text-align: center; }
+  .recovery-start { border-color: var(--success); background: var(--success-dim); color: var(--success); }
+  .recovery-term  { border-color: var(--border); background: transparent; color: var(--text-secondary); }
+  .recovery-panel button[disabled] { opacity: 0.4; cursor: not-allowed; }
+
+  /* Empty state */
+  .empty-state {
+    grid-column: 1 / -1; text-align: center; padding: 60px;
+    color: var(--text-muted); font-size: 15px;
+  }
+  .card.hidden { display: none; }
+
+  footer {
+    padding: 24px; color: var(--text-muted); font-size: 12px; text-align: center;
+    border-top: 1px solid var(--border);
+  }
+  footer a { color: var(--accent); text-decoration: none; }
+  footer a:hover { text-decoration: underline; }
 </style>
 </head>
 <body>
-<header>
-  <h1>
-    <span class="icon">⚒</span> Laurence Localhost <span class="accent">v2</span>
-    <span class="foundry-badge">Turner Foundry</span>
-    <span class="ro-badge">Read-only mirror</span>
-  </h1>
-</header>
-<div class="banner">
-  <strong>This is a static snapshot.</strong> No live state, no paths, no ports, no controls.
-  The working registry runs locally on <code>localhost:4343</code>.
+
+<!-- ══ TASK MANAGER (cosmetic mirror) ══════════════════════════════ -->
+<div class="task-manager">
+  <div class="tm-header">
+    <span class="tm-title">⬡ Task Manager</span>
+    <div class="tm-summary">
+      <span class="tm-pill tm-running">55 Mirrored</span>
+      <span class="tm-pill tm-stopped">Read-only</span>
+      <span class="tm-pill tm-conflict">✓ Clean</span>
+    </div>
+    <div class="tm-actions">
+      <button class="tm-btn" disabled title="Mirror only">▶ Start All</button>
+      <button class="tm-btn" disabled title="Mirror only">⚡ Fix Conflicts</button>
+      <button class="tm-btn" disabled title="Mirror only">↺ Re-scan</button>
+    </div>
+  </div>
 </div>
-<main>
-    <article class="card">
-      <div class="badges"><span class="badge">Static HTML</span></div>
-      <h3>Ai Whack</h3>
-      <p>Static HTML app</p>
+
+<header>
+  <div class="header-top">
+    <h1>
+      <span class="icon">⚒</span>
+      Laurence Localhost <span class="accent">v2</span>
+      <span class="foundry-badge">Turner Foundry</span>
+      <span class="ro-badge">Read-only mirror</span>
+    </h1>
+  </div>
+  <div class="controls">
+    <input type="text" class="search-input" id="searchInput" placeholder="Search projects by name or framework...">
+    <select id="frameworkFilter">
+      <option value="">All Frameworks</option>
+      <option value="Create React App">Create React App</option><option value="Django">Django</option><option value="Electron">Electron</option><option value="Express">Express</option><option value="Flask">Flask</option><option value="MySQL)">MySQL)</option><option value="Next.js">Next.js</option><option value="Node-RED">Node-RED</option><option value="Node.js">Node.js</option><option value="Prisma">Prisma</option><option value="Python">Python</option><option value="Static HTML">Static HTML</option><option value="Tailwind">Tailwind</option><option value="Three.js">Three.js</option><option value="Vite">Vite</option><option value="XAMPP (Apache">XAMPP (Apache</option><option value="pywebview">pywebview</option>
+    </select>
+  </div>
+</header>
+
+<div class="banner">
+  <strong>This is a static snapshot.</strong>
+  Visual mirror of <a href="#" onclick="return false">localhost:4343</a> — the working registry runs locally.
+  Source: <a href="https://github.com/lozturner/laurence-localhost-v2" target="_blank" rel="noopener">github.com/lozturner/laurence-localhost-v2</a>.
+</div>
+
+<div class="stats-bar">
+  <div class="stat"><span class="stat-value">55</span> Projects</div>
+  <div class="stat"><span class="stat-value">17</span> Frameworks</div>
+  <div class="stat"><span class="stat-value mirrored">55</span> With Thumbnails</div>
+</div>
+
+<main id="grid">
+
+    <article class="card" data-name="ai whack" data-framework="Static HTML">
+      <div class="card-thumb">
+        <img src="thumbnails/299317e3f870.png" alt="Ai Whack" loading="lazy">
+        <div class="framework-icon" title="Static HTML">H</div>
+        <div class="status-dot" title="Read-only mirror"></div>
+      </div>
+      <div class="card-body">
+        <div class="card-badges">
+          <span class="badge badge-static">Static HTML</span>
+          <span class="badge badge-port">:3001</span>
+          
+        </div>
+        <div class="card-name">Ai Whack</div>
+        <div class="card-desc">Static HTML app</div>
+      </div>
+      <div class="recovery-panel">
+        <div class="recovery-btns">
+          <button class="recovery-open" disabled title="Mirror only — visit the local dashboard to open">↗ Open :3001</button>
+          <button class="recovery-start" disabled title="Mirror only — visit the local dashboard to start">▶ Start</button>
+          <button class="recovery-term" disabled title="Mirror only">⬜ Terminal</button>
+        </div>
+      </div>
     </article>
-    <article class="card">
-      <div class="badges"><span class="badge">Next.js + Prisma + Tailwind</span></div>
-      <h3>Ai Whack</h3>
-      <p>This is a Next.js project bootstrapped with create-next-app.</p>
+
+    <article class="card" data-name="ai whack" data-framework="Next.js + Prisma + Tailwind">
+      <div class="card-thumb">
+        <img src="thumbnails/50a45d7530d0.png" alt="Ai Whack" loading="lazy">
+        <div class="framework-icon" title="Next.js + Prisma + Tailwind">N</div>
+        <div class="status-dot" title="Read-only mirror"></div>
+      </div>
+      <div class="card-body">
+        <div class="card-badges">
+          <span class="badge badge-nextjs">Next.js + Prisma + Tailwind</span>
+          <span class="badge badge-port">:3004</span>
+          <span class="badge badge-readme">README</span>
+        </div>
+        <div class="card-name">Ai Whack</div>
+        <div class="card-desc">This is a Next.js project bootstrapped with create-next-app.</div>
+      </div>
+      <div class="recovery-panel">
+        <div class="recovery-btns">
+          <button class="recovery-open" disabled title="Mirror only — visit the local dashboard to open">↗ Open :3004</button>
+          <button class="recovery-start" disabled title="Mirror only — visit the local dashboard to start">▶ Start</button>
+          <button class="recovery-term" disabled title="Mirror only">⬜ Terminal</button>
+        </div>
+      </div>
     </article>
-    <article class="card">
-      <div class="badges"><span class="badge">Python + pywebview</span></div>
-      <h3>Alexa Puck</h3>
-      <p>Python + pywebview project in alexa-puck</p>
+
+    <article class="card" data-name="alexa puck" data-framework="Python + pywebview">
+      <div class="card-thumb">
+        <img src="thumbnails/1765cdfe59f4.png" alt="Alexa Puck" loading="lazy">
+        <div class="framework-icon" title="Python + pywebview">Py</div>
+        <div class="status-dot" title="Read-only mirror"></div>
+      </div>
+      <div class="card-body">
+        <div class="card-badges">
+          <span class="badge badge-python">Python + pywebview</span>
+          
+          
+        </div>
+        <div class="card-name">Alexa Puck</div>
+        <div class="card-desc">Python + pywebview project in alexa-puck</div>
+      </div>
+      <div class="recovery-panel">
+        <div class="recovery-btns">
+          <button class="recovery-open" disabled title="Mirror only — visit the local dashboard to open">↗ Open</button>
+          <button class="recovery-start" disabled title="Mirror only — visit the local dashboard to start">▶ Start</button>
+          <button class="recovery-term" disabled title="Mirror only">⬜ Terminal</button>
+        </div>
+      </div>
     </article>
-    <article class="card">
-      <div class="badges"><span class="badge">Electron</span></div>
-      <h3>Binman</h3>
-      <p>Mike the Bin Man — Voice session logger &amp; feedback recorder</p>
+
+    <article class="card" data-name="binman" data-framework="Electron">
+      <div class="card-thumb">
+        <img src="thumbnails/e78c9c6b9cbb.png" alt="Binman" loading="lazy">
+        <div class="framework-icon" title="Electron">E</div>
+        <div class="status-dot" title="Read-only mirror"></div>
+      </div>
+      <div class="card-body">
+        <div class="card-badges">
+          <span class="badge badge-electron">Electron</span>
+          
+          <span class="badge badge-electron">Desktop</span>
+        </div>
+        <div class="card-name">Binman</div>
+        <div class="card-desc">Mike the Bin Man — Voice session logger &amp; feedback recorder</div>
+      </div>
+      <div class="recovery-panel">
+        <div class="recovery-btns">
+          <button class="recovery-open" disabled title="Mirror only — visit the local dashboard to open">↗ Open</button>
+          <button class="recovery-start" disabled title="Mirror only — visit the local dashboard to start">▶ Start</button>
+          <button class="recovery-term" disabled title="Mirror only">⬜ Terminal</button>
+        </div>
+      </div>
     </article>
-    <article class="card">
-      <div class="badges"><span class="badge">Vite + Three.js</span></div>
-      <h3>Brain Sim</h3>
-      <p>Vite + Three.js project with 3D visualization</p>
+
+    <article class="card" data-name="brain sim" data-framework="Vite + Three.js">
+      <div class="card-thumb">
+        <img src="thumbnails/f63c46ce3227.png" alt="Brain Sim" loading="lazy">
+        <div class="framework-icon" title="Vite + Three.js">V</div>
+        <div class="status-dot" title="Read-only mirror"></div>
+      </div>
+      <div class="card-body">
+        <div class="card-badges">
+          <span class="badge badge-vite">Vite + Three.js</span>
+          <span class="badge badge-port">:5174</span>
+          
+        </div>
+        <div class="card-name">Brain Sim</div>
+        <div class="card-desc">Vite + Three.js project with 3D visualization</div>
+      </div>
+      <div class="recovery-panel">
+        <div class="recovery-btns">
+          <button class="recovery-open" disabled title="Mirror only — visit the local dashboard to open">↗ Open :5174</button>
+          <button class="recovery-start" disabled title="Mirror only — visit the local dashboard to start">▶ Start</button>
+          <button class="recovery-term" disabled title="Mirror only">⬜ Terminal</button>
+        </div>
+      </div>
     </article>
-    <article class="card">
-      <div class="badges"><span class="badge">Python</span></div>
-      <h3>Circuit</h3>
-      <p>Python app</p>
+
+    <article class="card" data-name="circuit" data-framework="Python">
+      <div class="card-thumb">
+        <img src="thumbnails/a2b805b626b8.png" alt="Circuit" loading="lazy">
+        <div class="framework-icon" title="Python">Py</div>
+        <div class="status-dot" title="Read-only mirror"></div>
+      </div>
+      <div class="card-body">
+        <div class="card-badges">
+          <span class="badge badge-python">Python</span>
+          <span class="badge badge-port">:8771</span>
+          
+        </div>
+        <div class="card-name">Circuit</div>
+        <div class="card-desc">Python app</div>
+      </div>
+      <div class="recovery-panel">
+        <div class="recovery-btns">
+          <button class="recovery-open" disabled title="Mirror only — visit the local dashboard to open">↗ Open :8771</button>
+          <button class="recovery-start" disabled title="Mirror only — visit the local dashboard to start">▶ Start</button>
+          <button class="recovery-term" disabled title="Mirror only">⬜ Terminal</button>
+        </div>
+      </div>
     </article>
-    <article class="card">
-      <div class="badges"><span class="badge">Python</span></div>
-      <h3>Claude Everywhere</h3>
-      <p>Python app</p>
+
+    <article class="card" data-name="claude everywhere" data-framework="Python">
+      <div class="card-thumb">
+        <img src="thumbnails/ed8e198c975a.png" alt="Claude Everywhere" loading="lazy">
+        <div class="framework-icon" title="Python">Py</div>
+        <div class="status-dot" title="Read-only mirror"></div>
+      </div>
+      <div class="card-body">
+        <div class="card-badges">
+          <span class="badge badge-python">Python</span>
+          <span class="badge badge-port">:8772</span>
+          
+        </div>
+        <div class="card-name">Claude Everywhere</div>
+        <div class="card-desc">Python app</div>
+      </div>
+      <div class="recovery-panel">
+        <div class="recovery-btns">
+          <button class="recovery-open" disabled title="Mirror only — visit the local dashboard to open">↗ Open :8772</button>
+          <button class="recovery-start" disabled title="Mirror only — visit the local dashboard to start">▶ Start</button>
+          <button class="recovery-term" disabled title="Mirror only">⬜ Terminal</button>
+        </div>
+      </div>
     </article>
-    <article class="card">
-      <div class="badges"><span class="badge">Electron</span></div>
-      <h3>Claude Home Hub</h3>
-      <p>Voice-activated home hub — Windows System.Speech, 100% local, no API keys</p>
+
+    <article class="card" data-name="claude home hub" data-framework="Electron">
+      <div class="card-thumb">
+        <img src="thumbnails/3743c4a86158.png" alt="Claude Home Hub" loading="lazy">
+        <div class="framework-icon" title="Electron">E</div>
+        <div class="status-dot" title="Read-only mirror"></div>
+      </div>
+      <div class="card-body">
+        <div class="card-badges">
+          <span class="badge badge-electron">Electron</span>
+          
+          <span class="badge badge-electron">Desktop</span>
+        </div>
+        <div class="card-name">Claude Home Hub</div>
+        <div class="card-desc">Voice-activated home hub — Windows System.Speech, 100% local, no API keys</div>
+      </div>
+      <div class="recovery-panel">
+        <div class="recovery-btns">
+          <button class="recovery-open" disabled title="Mirror only — visit the local dashboard to open">↗ Open</button>
+          <button class="recovery-start" disabled title="Mirror only — visit the local dashboard to start">▶ Start</button>
+          <button class="recovery-term" disabled title="Mirror only">⬜ Terminal</button>
+        </div>
+      </div>
     </article>
-    <article class="card">
-      <div class="badges"><span class="badge">Electron</span></div>
-      <h3>Claude V1</h3>
-      <p>Claude v1 — Voice in, suggestions out, human in the loop</p>
+
+    <article class="card" data-name="claude v1" data-framework="Electron">
+      <div class="card-thumb">
+        <img src="thumbnails/436af4c783eb.png" alt="Claude V1" loading="lazy">
+        <div class="framework-icon" title="Electron">E</div>
+        <div class="status-dot" title="Read-only mirror"></div>
+      </div>
+      <div class="card-body">
+        <div class="card-badges">
+          <span class="badge badge-electron">Electron</span>
+          
+          <span class="badge badge-electron">Desktop</span>
+        </div>
+        <div class="card-name">Claude V1</div>
+        <div class="card-desc">Claude v1 — Voice in, suggestions out, human in the loop</div>
+      </div>
+      <div class="recovery-panel">
+        <div class="recovery-btns">
+          <button class="recovery-open" disabled title="Mirror only — visit the local dashboard to open">↗ Open</button>
+          <button class="recovery-start" disabled title="Mirror only — visit the local dashboard to start">▶ Start</button>
+          <button class="recovery-term" disabled title="Mirror only">⬜ Terminal</button>
+        </div>
+      </div>
     </article>
-    <article class="card">
-      <div class="badges"><span class="badge">Python</span></div>
-      <h3>Desktop</h3>
-      <p>Python app</p>
+
+    <article class="card" data-name="desktop" data-framework="Python">
+      <div class="card-thumb">
+        <img src="thumbnails/b8dbc61a46f2.png" alt="Desktop" loading="lazy">
+        <div class="framework-icon" title="Python">Py</div>
+        <div class="status-dot" title="Read-only mirror"></div>
+      </div>
+      <div class="card-body">
+        <div class="card-badges">
+          <span class="badge badge-python">Python</span>
+          <span class="badge badge-port">:8770</span>
+          
+        </div>
+        <div class="card-name">Desktop</div>
+        <div class="card-desc">Python app</div>
+      </div>
+      <div class="recovery-panel">
+        <div class="recovery-btns">
+          <button class="recovery-open" disabled title="Mirror only — visit the local dashboard to open">↗ Open :8770</button>
+          <button class="recovery-start" disabled title="Mirror only — visit the local dashboard to start">▶ Start</button>
+          <button class="recovery-term" disabled title="Mirror only">⬜ Terminal</button>
+        </div>
+      </div>
     </article>
-    <article class="card">
-      <div class="badges"><span class="badge">Electron</span></div>
-      <h3>Donner Pad</h3>
-      <p>Digital StarryPad — Donner MIDI pad controller clone for desktop automation</p>
+
+    <article class="card" data-name="donner pad" data-framework="Electron">
+      <div class="card-thumb">
+        <img src="thumbnails/66cb2d8d8cf2.png" alt="Donner Pad" loading="lazy">
+        <div class="framework-icon" title="Electron">E</div>
+        <div class="status-dot" title="Read-only mirror"></div>
+      </div>
+      <div class="card-body">
+        <div class="card-badges">
+          <span class="badge badge-electron">Electron</span>
+          
+          <span class="badge badge-electron">Desktop</span>
+        </div>
+        <div class="card-name">Donner Pad</div>
+        <div class="card-desc">Digital StarryPad — Donner MIDI pad controller clone for desktop automation</div>
+      </div>
+      <div class="recovery-panel">
+        <div class="recovery-btns">
+          <button class="recovery-open" disabled title="Mirror only — visit the local dashboard to open">↗ Open</button>
+          <button class="recovery-start" disabled title="Mirror only — visit the local dashboard to start">▶ Start</button>
+          <button class="recovery-term" disabled title="Mirror only">⬜ Terminal</button>
+        </div>
+      </div>
     </article>
-    <article class="card">
-      <div class="badges"><span class="badge">Python</span></div>
-      <h3>Fos</h3>
-      <p>Python app</p>
+
+    <article class="card" data-name="fos" data-framework="Python">
+      <div class="card-thumb">
+        <img src="thumbnails/26c6425c1112.png" alt="Fos" loading="lazy">
+        <div class="framework-icon" title="Python">Py</div>
+        <div class="status-dot" title="Read-only mirror"></div>
+      </div>
+      <div class="card-body">
+        <div class="card-badges">
+          <span class="badge badge-python">Python</span>
+          <span class="badge badge-port">:8768</span>
+          
+        </div>
+        <div class="card-name">Fos</div>
+        <div class="card-desc">Python app</div>
+      </div>
+      <div class="recovery-panel">
+        <div class="recovery-btns">
+          <button class="recovery-open" disabled title="Mirror only — visit the local dashboard to open">↗ Open :8768</button>
+          <button class="recovery-start" disabled title="Mirror only — visit the local dashboard to start">▶ Start</button>
+          <button class="recovery-term" disabled title="Mirror only">⬜ Terminal</button>
+        </div>
+      </div>
     </article>
-    <article class="card">
-      <div class="badges"><span class="badge">Python</span></div>
-      <h3>Gpt Computer Assistant</h3>
-      <p>&lt;p align=&quot;center&quot;&gt;</p>
+
+    <article class="card" data-name="gpt computer assistant" data-framework="Python">
+      <div class="card-thumb">
+        <img src="thumbnails/ad89bc41808a.png" alt="Gpt Computer Assistant" loading="lazy">
+        <div class="framework-icon" title="Python">Py</div>
+        <div class="status-dot" title="Read-only mirror"></div>
+      </div>
+      <div class="card-body">
+        <div class="card-badges">
+          <span class="badge badge-python">Python</span>
+          
+          <span class="badge badge-readme">README</span>
+        </div>
+        <div class="card-name">Gpt Computer Assistant</div>
+        <div class="card-desc"></div>
+      </div>
+      <div class="recovery-panel">
+        <div class="recovery-btns">
+          <button class="recovery-open" disabled title="Mirror only — visit the local dashboard to open">↗ Open</button>
+          <button class="recovery-start" disabled title="Mirror only — visit the local dashboard to start">▶ Start</button>
+          <button class="recovery-term" disabled title="Mirror only">⬜ Terminal</button>
+        </div>
+      </div>
     </article>
-    <article class="card">
-      <div class="badges"><span class="badge">Express</span></div>
-      <h3>Html Editor</h3>
-      <p>Express project in html-editor</p>
+
+    <article class="card" data-name="html editor" data-framework="Express">
+      <div class="card-thumb">
+        <img src="thumbnails/440da9d07555.png" alt="Html Editor" loading="lazy">
+        <div class="framework-icon" title="Express">Ex</div>
+        <div class="status-dot" title="Read-only mirror"></div>
+      </div>
+      <div class="card-body">
+        <div class="card-badges">
+          <span class="badge badge-express">Express</span>
+          <span class="badge badge-port">:3008</span>
+          
+        </div>
+        <div class="card-name">Html Editor</div>
+        <div class="card-desc">Express project in html-editor</div>
+      </div>
+      <div class="recovery-panel">
+        <div class="recovery-btns">
+          <button class="recovery-open" disabled title="Mirror only — visit the local dashboard to open">↗ Open :3008</button>
+          <button class="recovery-start" disabled title="Mirror only — visit the local dashboard to start">▶ Start</button>
+          <button class="recovery-term" disabled title="Mirror only">⬜ Terminal</button>
+        </div>
+      </div>
     </article>
-    <article class="card">
-      <div class="badges"><span class="badge">Python</span></div>
-      <h3>Image Resolver</h3>
-      <p>Python app</p>
+
+    <article class="card" data-name="image resolver" data-framework="Python">
+      <div class="card-thumb">
+        <img src="thumbnails/3724fbccd32a.png" alt="Image Resolver" loading="lazy">
+        <div class="framework-icon" title="Python">Py</div>
+        <div class="status-dot" title="Read-only mirror"></div>
+      </div>
+      <div class="card-body">
+        <div class="card-badges">
+          <span class="badge badge-python">Python</span>
+          <span class="badge badge-port">:8774</span>
+          
+        </div>
+        <div class="card-name">Image Resolver</div>
+        <div class="card-desc">Python app</div>
+      </div>
+      <div class="recovery-panel">
+        <div class="recovery-btns">
+          <button class="recovery-open" disabled title="Mirror only — visit the local dashboard to open">↗ Open :8774</button>
+          <button class="recovery-start" disabled title="Mirror only — visit the local dashboard to start">▶ Start</button>
+          <button class="recovery-term" disabled title="Mirror only">⬜ Terminal</button>
+        </div>
+      </div>
     </article>
-    <article class="card">
-      <div class="badges"><span class="badge">Static HTML</span></div>
-      <h3>Laurence Biz</h3>
-      <p>Static HTML app</p>
+
+    <article class="card" data-name="laurence biz" data-framework="Static HTML">
+      <div class="card-thumb">
+        <img src="thumbnails/a6594b96fd20.png" alt="Laurence Biz" loading="lazy">
+        <div class="framework-icon" title="Static HTML">H</div>
+        <div class="status-dot" title="Read-only mirror"></div>
+      </div>
+      <div class="card-body">
+        <div class="card-badges">
+          <span class="badge badge-static">Static HTML</span>
+          <span class="badge badge-port">:3002</span>
+          
+        </div>
+        <div class="card-name">Laurence Biz</div>
+        <div class="card-desc">Static HTML app</div>
+      </div>
+      <div class="recovery-panel">
+        <div class="recovery-btns">
+          <button class="recovery-open" disabled title="Mirror only — visit the local dashboard to open">↗ Open :3002</button>
+          <button class="recovery-start" disabled title="Mirror only — visit the local dashboard to start">▶ Start</button>
+          <button class="recovery-term" disabled title="Mirror only">⬜ Terminal</button>
+        </div>
+      </div>
     </article>
-    <article class="card">
-      <div class="badges"><span class="badge">Next.js + Tailwind</span></div>
-      <h3>Laurence Biz</h3>
-      <p>This is a Next.js project bootstrapped with create-next-app.</p>
+
+    <article class="card" data-name="laurence biz" data-framework="Next.js + Tailwind">
+      <div class="card-thumb">
+        <img src="thumbnails/79769f52be13.png" alt="Laurence Biz" loading="lazy">
+        <div class="framework-icon" title="Next.js + Tailwind">N</div>
+        <div class="status-dot" title="Read-only mirror"></div>
+      </div>
+      <div class="card-body">
+        <div class="card-badges">
+          <span class="badge badge-nextjs">Next.js + Tailwind</span>
+          <span class="badge badge-port">:3003</span>
+          <span class="badge badge-readme">README</span>
+        </div>
+        <div class="card-name">Laurence Biz</div>
+        <div class="card-desc">This is a Next.js project bootstrapped with create-next-app.</div>
+      </div>
+      <div class="recovery-panel">
+        <div class="recovery-btns">
+          <button class="recovery-open" disabled title="Mirror only — visit the local dashboard to open">↗ Open :3003</button>
+          <button class="recovery-start" disabled title="Mirror only — visit the local dashboard to start">▶ Start</button>
+          <button class="recovery-term" disabled title="Mirror only">⬜ Terminal</button>
+        </div>
+      </div>
     </article>
-    <article class="card">
-      <div class="badges"><span class="badge">Static HTML</span></div>
-      <h3>Laurence Lens</h3>
-      <p>Static HTML app</p>
+
+    <article class="card" data-name="laurence lens" data-framework="Static HTML">
+      <div class="card-thumb">
+        <img src="thumbnails/d476f88a8dc2.png" alt="Laurence Lens" loading="lazy">
+        <div class="framework-icon" title="Static HTML">H</div>
+        <div class="status-dot" title="Read-only mirror"></div>
+      </div>
+      <div class="card-body">
+        <div class="card-badges">
+          <span class="badge badge-static">Static HTML</span>
+          <span class="badge badge-port">:3000</span>
+          
+        </div>
+        <div class="card-name">Laurence Lens</div>
+        <div class="card-desc">Static HTML app</div>
+      </div>
+      <div class="recovery-panel">
+        <div class="recovery-btns">
+          <button class="recovery-open" disabled title="Mirror only — visit the local dashboard to open">↗ Open :3000</button>
+          <button class="recovery-start" disabled title="Mirror only — visit the local dashboard to start">▶ Start</button>
+          <button class="recovery-term" disabled title="Mirror only">⬜ Terminal</button>
+        </div>
+      </div>
     </article>
-    <article class="card">
-      <div class="badges"><span class="badge">Next.js + Tailwind</span></div>
-      <h3>Laurence Lens</h3>
-      <p>This is a Next.js project bootstrapped with create-next-app.</p>
+
+    <article class="card" data-name="laurence lens" data-framework="Next.js + Tailwind">
+      <div class="card-thumb">
+        <img src="thumbnails/9d9fe816c2da.png" alt="Laurence Lens" loading="lazy">
+        <div class="framework-icon" title="Next.js + Tailwind">N</div>
+        <div class="status-dot" title="Read-only mirror"></div>
+      </div>
+      <div class="card-body">
+        <div class="card-badges">
+          <span class="badge badge-nextjs">Next.js + Tailwind</span>
+          <span class="badge badge-port">:3005</span>
+          <span class="badge badge-readme">README</span>
+        </div>
+        <div class="card-name">Laurence Lens</div>
+        <div class="card-desc">This is a Next.js project bootstrapped with create-next-app.</div>
+      </div>
+      <div class="recovery-panel">
+        <div class="recovery-btns">
+          <button class="recovery-open" disabled title="Mirror only — visit the local dashboard to open">↗ Open :3005</button>
+          <button class="recovery-start" disabled title="Mirror only — visit the local dashboard to start">▶ Start</button>
+          <button class="recovery-term" disabled title="Mirror only">⬜ Terminal</button>
+        </div>
+      </div>
     </article>
-    <article class="card">
-      <div class="badges"><span class="badge">Python</span></div>
-      <h3>Laurence Voice Control</h3>
-      <p>Python project in Laurence voice control</p>
+
+    <article class="card" data-name="laurence voice control" data-framework="Python">
+      <div class="card-thumb">
+        <img src="thumbnails/319d7df7c199.png" alt="Laurence Voice Control" loading="lazy">
+        <div class="framework-icon" title="Python">Py</div>
+        <div class="status-dot" title="Read-only mirror"></div>
+      </div>
+      <div class="card-body">
+        <div class="card-badges">
+          <span class="badge badge-python">Python</span>
+          
+          
+        </div>
+        <div class="card-name">Laurence Voice Control</div>
+        <div class="card-desc">Python project in Laurence voice control</div>
+      </div>
+      <div class="recovery-panel">
+        <div class="recovery-btns">
+          <button class="recovery-open" disabled title="Mirror only — visit the local dashboard to open">↗ Open</button>
+          <button class="recovery-start" disabled title="Mirror only — visit the local dashboard to start">▶ Start</button>
+          <button class="recovery-term" disabled title="Mirror only">⬜ Terminal</button>
+        </div>
+      </div>
     </article>
-    <article class="card">
-      <div class="badges"><span class="badge">Static HTML</span></div>
-      <h3>Laurence Watchers</h3>
-      <p>Static HTML project in Laurence Watchers</p>
+
+    <article class="card" data-name="laurence watchers" data-framework="Static HTML">
+      <div class="card-thumb">
+        <img src="thumbnails/eac0ef69712c.png" alt="Laurence Watchers" loading="lazy">
+        <div class="framework-icon" title="Static HTML">H</div>
+        <div class="status-dot" title="Read-only mirror"></div>
+      </div>
+      <div class="card-body">
+        <div class="card-badges">
+          <span class="badge badge-static">Static HTML</span>
+          <span class="badge badge-port">:3998</span>
+          
+        </div>
+        <div class="card-name">Laurence Watchers</div>
+        <div class="card-desc">Static HTML project in Laurence Watchers</div>
+      </div>
+      <div class="recovery-panel">
+        <div class="recovery-btns">
+          <button class="recovery-open" disabled title="Mirror only — visit the local dashboard to open">↗ Open :3998</button>
+          <button class="recovery-start" disabled title="Mirror only — visit the local dashboard to start">▶ Start</button>
+          <button class="recovery-term" disabled title="Mirror only">⬜ Terminal</button>
+        </div>
+      </div>
     </article>
-    <article class="card">
-      <div class="badges"><span class="badge">Python + pywebview</span></div>
-      <h3>Laurence Windows Chatbot</h3>
-      <p>Python + pywebview project in laurence windows chatbot</p>
+
+    <article class="card" data-name="laurence windows chatbot" data-framework="Python + pywebview">
+      <div class="card-thumb">
+        <img src="thumbnails/c707eea2f8cb.png" alt="Laurence Windows Chatbot" loading="lazy">
+        <div class="framework-icon" title="Python + pywebview">Py</div>
+        <div class="status-dot" title="Read-only mirror"></div>
+      </div>
+      <div class="card-body">
+        <div class="card-badges">
+          <span class="badge badge-python">Python + pywebview</span>
+          <span class="badge badge-port">:8765</span>
+          
+        </div>
+        <div class="card-name">Laurence Windows Chatbot</div>
+        <div class="card-desc">Python + pywebview project in laurence windows chatbot</div>
+      </div>
+      <div class="recovery-panel">
+        <div class="recovery-btns">
+          <button class="recovery-open" disabled title="Mirror only — visit the local dashboard to open">↗ Open :8765</button>
+          <button class="recovery-start" disabled title="Mirror only — visit the local dashboard to start">▶ Start</button>
+          <button class="recovery-term" disabled title="Mirror only">⬜ Terminal</button>
+        </div>
+      </div>
     </article>
-    <article class="card">
-      <div class="badges"><span class="badge">Static HTML</span></div>
-      <h3>LawrenceBeatYourselfUp.Com</h3>
-      <p>Static HTML project in LawrenceBeatYourselfUp.com</p>
+
+    <article class="card" data-name="lawrencebeatyourselfup.com" data-framework="Static HTML">
+      <div class="card-thumb">
+        <img src="thumbnails/22b7cbc1c765.png" alt="LawrenceBeatYourselfUp.Com" loading="lazy">
+        <div class="framework-icon" title="Static HTML">H</div>
+        <div class="status-dot" title="Read-only mirror"></div>
+      </div>
+      <div class="card-body">
+        <div class="card-badges">
+          <span class="badge badge-static">Static HTML</span>
+          <span class="badge badge-port">:8080</span>
+          
+        </div>
+        <div class="card-name">LawrenceBeatYourselfUp.Com</div>
+        <div class="card-desc">Static HTML project in LawrenceBeatYourselfUp.com</div>
+      </div>
+      <div class="recovery-panel">
+        <div class="recovery-btns">
+          <button class="recovery-open" disabled title="Mirror only — visit the local dashboard to open">↗ Open :8080</button>
+          <button class="recovery-start" disabled title="Mirror only — visit the local dashboard to start">▶ Start</button>
+          <button class="recovery-term" disabled title="Mirror only">⬜ Terminal</button>
+        </div>
+      </div>
     </article>
-    <article class="card">
-      <div class="badges"><span class="badge">Python + Django</span></div>
-      <h3>LLMStack</h3>
-      <p>&lt;p align=&quot;center&quot;&gt;</p>
+
+    <article class="card" data-name="llmstack" data-framework="Python + Django">
+      <div class="card-thumb">
+        <img src="thumbnails/f597339f56ff.png" alt="LLMStack" loading="lazy">
+        <div class="framework-icon" title="Python + Django">Py</div>
+        <div class="status-dot" title="Read-only mirror"></div>
+      </div>
+      <div class="card-body">
+        <div class="card-badges">
+          <span class="badge badge-python">Python + Django</span>
+          <span class="badge badge-port">:8001</span>
+          <span class="badge badge-docker">Docker</span><span class="badge badge-readme">README</span>
+        </div>
+        <div class="card-name">LLMStack</div>
+        <div class="card-desc"></div>
+      </div>
+      <div class="recovery-panel">
+        <div class="recovery-btns">
+          <button class="recovery-open" disabled title="Mirror only — visit the local dashboard to open">↗ Open :8001</button>
+          <button class="recovery-start" disabled title="Mirror only — visit the local dashboard to start">▶ Start</button>
+          <button class="recovery-term" disabled title="Mirror only">⬜ Terminal</button>
+        </div>
+      </div>
     </article>
-    <article class="card">
-      <div class="badges"><span class="badge">Electron + Express</span></div>
-      <h3>Localhost Phonebook</h3>
-      <p>Dashboard for all localhost development projects</p>
+
+    <article class="card" data-name="localhost phonebook" data-framework="Electron + Express">
+      <div class="card-thumb">
+        <img src="thumbnails/ed7be613f549.png" alt="Localhost Phonebook" loading="lazy">
+        <div class="framework-icon" title="Electron + Express">Ex</div>
+        <div class="status-dot" title="Read-only mirror"></div>
+      </div>
+      <div class="card-body">
+        <div class="card-badges">
+          <span class="badge badge-express">Electron + Express</span>
+          <span class="badge badge-port">:4000</span>
+          <span class="badge badge-electron">Desktop</span>
+        </div>
+        <div class="card-name">Localhost Phonebook</div>
+        <div class="card-desc">Dashboard for all localhost development projects</div>
+      </div>
+      <div class="recovery-panel">
+        <div class="recovery-btns">
+          <button class="recovery-open" disabled title="Mirror only — visit the local dashboard to open">↗ Open :4000</button>
+          <button class="recovery-start" disabled title="Mirror only — visit the local dashboard to start">▶ Start</button>
+          <button class="recovery-term" disabled title="Mirror only">⬜ Terminal</button>
+        </div>
+      </div>
     </article>
-    <article class="card">
-      <div class="badges"><span class="badge">Python</span></div>
-      <h3>Loz Pipeline (Flask)</h3>
-      <p>Python app</p>
+
+    <article class="card" data-name="loz pipeline (flask)" data-framework="Python">
+      <div class="card-thumb">
+        <img src="thumbnails/f920fa8ab3f5.png" alt="Loz Pipeline (Flask)" loading="lazy">
+        <div class="framework-icon" title="Python">Py</div>
+        <div class="status-dot" title="Read-only mirror"></div>
+      </div>
+      <div class="card-body">
+        <div class="card-badges">
+          <span class="badge badge-python">Python</span>
+          <span class="badge badge-port">:5000</span>
+          
+        </div>
+        <div class="card-name">Loz Pipeline (Flask)</div>
+        <div class="card-desc">Python app</div>
+      </div>
+      <div class="recovery-panel">
+        <div class="recovery-btns">
+          <button class="recovery-open" disabled title="Mirror only — visit the local dashboard to open">↗ Open :5000</button>
+          <button class="recovery-start" disabled title="Mirror only — visit the local dashboard to start">▶ Start</button>
+          <button class="recovery-term" disabled title="Mirror only">⬜ Terminal</button>
+        </div>
+      </div>
     </article>
-    <article class="card">
-      <div class="badges"><span class="badge">Electron</span></div>
-      <h3>Movie Magic</h3>
-      <p>Movie Magic — Presentation translator for neurodivergent speakers. Verbose to punchy.</p>
+
+    <article class="card" data-name="movie magic" data-framework="Electron">
+      <div class="card-thumb">
+        <img src="thumbnails/b64c377881c5.png" alt="Movie Magic" loading="lazy">
+        <div class="framework-icon" title="Electron">E</div>
+        <div class="status-dot" title="Read-only mirror"></div>
+      </div>
+      <div class="card-body">
+        <div class="card-badges">
+          <span class="badge badge-electron">Electron</span>
+          
+          <span class="badge badge-electron">Desktop</span>
+        </div>
+        <div class="card-name">Movie Magic</div>
+        <div class="card-desc">Movie Magic — Presentation translator for neurodivergent speakers. Verbose to punchy.</div>
+      </div>
+      <div class="recovery-panel">
+        <div class="recovery-btns">
+          <button class="recovery-open" disabled title="Mirror only — visit the local dashboard to open">↗ Open</button>
+          <button class="recovery-start" disabled title="Mirror only — visit the local dashboard to start">▶ Start</button>
+          <button class="recovery-term" disabled title="Mirror only">⬜ Terminal</button>
+        </div>
+      </div>
     </article>
-    <article class="card">
-      <div class="badges"><span class="badge">Create React App</span></div>
-      <h3>My React App</h3>
-      <p>This project was bootstrapped with Create React App.</p>
+
+    <article class="card" data-name="my react app" data-framework="Create React App">
+      <div class="card-thumb">
+        <img src="thumbnails/e751a56c2662.png" alt="My React App" loading="lazy">
+        <div class="framework-icon" title="Create React App">R</div>
+        <div class="status-dot" title="Read-only mirror"></div>
+      </div>
+      <div class="card-body">
+        <div class="card-badges">
+          <span class="badge badge-react">Create React App</span>
+          <span class="badge badge-port">:3006</span>
+          <span class="badge badge-readme">README</span>
+        </div>
+        <div class="card-name">My React App</div>
+        <div class="card-desc">This project was bootstrapped with Create React App.</div>
+      </div>
+      <div class="recovery-panel">
+        <div class="recovery-btns">
+          <button class="recovery-open" disabled title="Mirror only — visit the local dashboard to open">↗ Open :3006</button>
+          <button class="recovery-start" disabled title="Mirror only — visit the local dashboard to start">▶ Start</button>
+          <button class="recovery-term" disabled title="Mirror only">⬜ Terminal</button>
+        </div>
+      </div>
     </article>
-    <article class="card">
-      <div class="badges"><span class="badge">Node.js</span></div>
-      <h3>Niggly Machine</h3>
-      <p>&lt;p align=&quot;center&quot;&gt; &lt;img src=&quot;https://img.shields.io/badge/Python-3.11+-3776AB?style=for-the-badge&amp;logo=python&amp;logoColor=white&quot; /&gt; &lt;img src=&quot;https://img.shields.io/badge/Pla</p>
+
+    <article class="card" data-name="niggly machine" data-framework="Node.js">
+      <div class="card-thumb">
+        <img src="thumbnails/fa5b7f19890b.png" alt="Niggly Machine" loading="lazy">
+        <div class="framework-icon" title="Node.js">?</div>
+        <div class="status-dot" title="Read-only mirror"></div>
+      </div>
+      <div class="card-body">
+        <div class="card-badges">
+          <span class="badge badge-framework">Node.js</span>
+          
+          <span class="badge badge-readme">README</span>
+        </div>
+        <div class="card-name">Niggly Machine</div>
+        <div class="card-desc"></div>
+      </div>
+      <div class="recovery-panel">
+        <div class="recovery-btns">
+          <button class="recovery-open" disabled title="Mirror only — visit the local dashboard to open">↗ Open</button>
+          <button class="recovery-start" disabled title="Mirror only — visit the local dashboard to start">▶ Start</button>
+          <button class="recovery-term" disabled title="Mirror only">⬜ Terminal</button>
+        </div>
+      </div>
     </article>
-    <article class="card">
-      <div class="badges"><span class="badge">Static HTML</span></div>
-      <h3>Node Http Server</h3>
-      <p>Static HTML app</p>
+
+    <article class="card" data-name="node http server" data-framework="Static HTML">
+      <div class="card-thumb">
+        <img src="thumbnails/ba65107d5aa9.png" alt="Node Http Server" loading="lazy">
+        <div class="framework-icon" title="Static HTML">H</div>
+        <div class="status-dot" title="Read-only mirror"></div>
+      </div>
+      <div class="card-body">
+        <div class="card-badges">
+          <span class="badge badge-static">Static HTML</span>
+          <span class="badge badge-port">:8081</span>
+          
+        </div>
+        <div class="card-name">Node Http Server</div>
+        <div class="card-desc">Static HTML app</div>
+      </div>
+      <div class="recovery-panel">
+        <div class="recovery-btns">
+          <button class="recovery-open" disabled title="Mirror only — visit the local dashboard to open">↗ Open :8081</button>
+          <button class="recovery-start" disabled title="Mirror only — visit the local dashboard to start">▶ Start</button>
+          <button class="recovery-term" disabled title="Mirror only">⬜ Terminal</button>
+        </div>
+      </div>
     </article>
-    <article class="card">
-      <div class="badges"><span class="badge">Node-RED</span></div>
-      <h3>Node-RED</h3>
-      <p>Flow-based automation and IoT platform</p>
+
+    <article class="card" data-name="node-red" data-framework="Node-RED">
+      <div class="card-thumb">
+        <img src="thumbnails/19d874f92a9c.png" alt="Node-RED" loading="lazy">
+        <div class="framework-icon" title="Node-RED">NR</div>
+        <div class="status-dot" title="Read-only mirror"></div>
+      </div>
+      <div class="card-body">
+        <div class="card-badges">
+          <span class="badge badge-nodered">Node-RED</span>
+          <span class="badge badge-port">:1880</span>
+          
+        </div>
+        <div class="card-name">Node-RED</div>
+        <div class="card-desc">Flow-based automation and IoT platform</div>
+      </div>
+      <div class="recovery-panel">
+        <div class="recovery-btns">
+          <button class="recovery-open" disabled title="Mirror only — visit the local dashboard to open">↗ Open :1880</button>
+          <button class="recovery-start" disabled title="Mirror only — visit the local dashboard to start">▶ Start</button>
+          <button class="recovery-term" disabled title="Mirror only">⬜ Terminal</button>
+        </div>
+      </div>
     </article>
-    <article class="card">
-      <div class="badges"><span class="badge">Express</span></div>
-      <h3>Org Sim</h3>
-      <p>Express project in org-sim</p>
+
+    <article class="card" data-name="org sim" data-framework="Express">
+      <div class="card-thumb">
+        <img src="thumbnails/c4a85397b86a.png" alt="Org Sim" loading="lazy">
+        <div class="framework-icon" title="Express">Ex</div>
+        <div class="status-dot" title="Read-only mirror"></div>
+      </div>
+      <div class="card-body">
+        <div class="card-badges">
+          <span class="badge badge-express">Express</span>
+          <span class="badge badge-port">:3999</span>
+          
+        </div>
+        <div class="card-name">Org Sim</div>
+        <div class="card-desc">Express project in org-sim</div>
+      </div>
+      <div class="recovery-panel">
+        <div class="recovery-btns">
+          <button class="recovery-open" disabled title="Mirror only — visit the local dashboard to open">↗ Open :3999</button>
+          <button class="recovery-start" disabled title="Mirror only — visit the local dashboard to start">▶ Start</button>
+          <button class="recovery-term" disabled title="Mirror only">⬜ Terminal</button>
+        </div>
+      </div>
     </article>
-    <article class="card">
-      <div class="badges"><span class="badge">Python</span></div>
-      <h3>Personal Ai System</h3>
-      <p>A reusable CSS JS animation system designed for ADHD-friendly micro-interactions. Drop into any project.</p>
+
+    <article class="card" data-name="personal ai system" data-framework="Python">
+      <div class="card-thumb">
+        <img src="thumbnails/e0f87abbd4e0.png" alt="Personal Ai System" loading="lazy">
+        <div class="framework-icon" title="Python">Py</div>
+        <div class="status-dot" title="Read-only mirror"></div>
+      </div>
+      <div class="card-body">
+        <div class="card-badges">
+          <span class="badge badge-python">Python</span>
+          
+          <span class="badge badge-readme">README</span>
+        </div>
+        <div class="card-name">Personal Ai System</div>
+        <div class="card-desc">A reusable CSS JS animation system designed for ADHD-friendly micro-interactions. Drop into any project.</div>
+      </div>
+      <div class="recovery-panel">
+        <div class="recovery-btns">
+          <button class="recovery-open" disabled title="Mirror only — visit the local dashboard to open">↗ Open</button>
+          <button class="recovery-start" disabled title="Mirror only — visit the local dashboard to start">▶ Start</button>
+          <button class="recovery-term" disabled title="Mirror only">⬜ Terminal</button>
+        </div>
+      </div>
     </article>
-    <article class="card">
-      <div class="badges"><span class="badge">Python</span></div>
-      <h3>Picture Finder</h3>
-      <p>Python app</p>
+
+    <article class="card" data-name="picture finder" data-framework="Python">
+      <div class="card-thumb">
+        <img src="thumbnails/6b62472a6d40.png" alt="Picture Finder" loading="lazy">
+        <div class="framework-icon" title="Python">Py</div>
+        <div class="status-dot" title="Read-only mirror"></div>
+      </div>
+      <div class="card-body">
+        <div class="card-badges">
+          <span class="badge badge-python">Python</span>
+          <span class="badge badge-port">:8776</span>
+          
+        </div>
+        <div class="card-name">Picture Finder</div>
+        <div class="card-desc">Python app</div>
+      </div>
+      <div class="recovery-panel">
+        <div class="recovery-btns">
+          <button class="recovery-open" disabled title="Mirror only — visit the local dashboard to open">↗ Open :8776</button>
+          <button class="recovery-start" disabled title="Mirror only — visit the local dashboard to start">▶ Start</button>
+          <button class="recovery-term" disabled title="Mirror only">⬜ Terminal</button>
+        </div>
+      </div>
     </article>
-    <article class="card">
-      <div class="badges"><span class="badge">Python</span></div>
-      <h3>Prompt Forge</h3>
-      <p>Python app</p>
+
+    <article class="card" data-name="prompt forge" data-framework="Python">
+      <div class="card-thumb">
+        <img src="thumbnails/89fdd981cbbb.png" alt="Prompt Forge" loading="lazy">
+        <div class="framework-icon" title="Python">Py</div>
+        <div class="status-dot" title="Read-only mirror"></div>
+      </div>
+      <div class="card-body">
+        <div class="card-badges">
+          <span class="badge badge-python">Python</span>
+          <span class="badge badge-port">:8786</span>
+          
+        </div>
+        <div class="card-name">Prompt Forge</div>
+        <div class="card-desc">Python app</div>
+      </div>
+      <div class="recovery-panel">
+        <div class="recovery-btns">
+          <button class="recovery-open" disabled title="Mirror only — visit the local dashboard to open">↗ Open :8786</button>
+          <button class="recovery-start" disabled title="Mirror only — visit the local dashboard to start">▶ Start</button>
+          <button class="recovery-term" disabled title="Mirror only">⬜ Terminal</button>
+        </div>
+      </div>
     </article>
-    <article class="card">
-      <div class="badges"><span class="badge">Python</span></div>
-      <h3>Python Static</h3>
-      <p>Python app</p>
+
+    <article class="card" data-name="python static" data-framework="Python">
+      <div class="card-thumb">
+        <img src="thumbnails/1421d18568ab.png" alt="Python Static" loading="lazy">
+        <div class="framework-icon" title="Python">Py</div>
+        <div class="status-dot" title="Read-only mirror"></div>
+      </div>
+      <div class="card-body">
+        <div class="card-badges">
+          <span class="badge badge-python">Python</span>
+          <span class="badge badge-port">:8000</span>
+          
+        </div>
+        <div class="card-name">Python Static</div>
+        <div class="card-desc">Python app</div>
+      </div>
+      <div class="recovery-panel">
+        <div class="recovery-btns">
+          <button class="recovery-open" disabled title="Mirror only — visit the local dashboard to open">↗ Open :8000</button>
+          <button class="recovery-start" disabled title="Mirror only — visit the local dashboard to start">▶ Start</button>
+          <button class="recovery-term" disabled title="Mirror only">⬜ Terminal</button>
+        </div>
+      </div>
     </article>
-    <article class="card">
-      <div class="badges"><span class="badge">Electron</span></div>
-      <h3>Sandra</h3>
-      <p>Sandra — Voice-activated desktop app launcher</p>
+
+    <article class="card" data-name="sandra" data-framework="Electron">
+      <div class="card-thumb">
+        <img src="thumbnails/4a0b58fd63a5.png" alt="Sandra" loading="lazy">
+        <div class="framework-icon" title="Electron">E</div>
+        <div class="status-dot" title="Read-only mirror"></div>
+      </div>
+      <div class="card-body">
+        <div class="card-badges">
+          <span class="badge badge-electron">Electron</span>
+          
+          <span class="badge badge-electron">Desktop</span>
+        </div>
+        <div class="card-name">Sandra</div>
+        <div class="card-desc">Sandra — Voice-activated desktop app launcher</div>
+      </div>
+      <div class="recovery-panel">
+        <div class="recovery-btns">
+          <button class="recovery-open" disabled title="Mirror only — visit the local dashboard to open">↗ Open</button>
+          <button class="recovery-start" disabled title="Mirror only — visit the local dashboard to start">▶ Start</button>
+          <button class="recovery-term" disabled title="Mirror only">⬜ Terminal</button>
+        </div>
+      </div>
     </article>
-    <article class="card">
-      <div class="badges"><span class="badge">Python</span></div>
-      <h3>Sea Lion</h3>
-      <p>Python app</p>
+
+    <article class="card" data-name="sea lion" data-framework="Python">
+      <div class="card-thumb">
+        <img src="thumbnails/e25fafff4092.png" alt="Sea Lion" loading="lazy">
+        <div class="framework-icon" title="Python">Py</div>
+        <div class="status-dot" title="Read-only mirror"></div>
+      </div>
+      <div class="card-body">
+        <div class="card-badges">
+          <span class="badge badge-python">Python</span>
+          <span class="badge badge-port">:8775</span>
+          
+        </div>
+        <div class="card-name">Sea Lion</div>
+        <div class="card-desc">Python app</div>
+      </div>
+      <div class="recovery-panel">
+        <div class="recovery-btns">
+          <button class="recovery-open" disabled title="Mirror only — visit the local dashboard to open">↗ Open :8775</button>
+          <button class="recovery-start" disabled title="Mirror only — visit the local dashboard to start">▶ Start</button>
+          <button class="recovery-term" disabled title="Mirror only">⬜ Terminal</button>
+        </div>
+      </div>
     </article>
-    <article class="card">
-      <div class="badges"><span class="badge">Python</span></div>
-      <h3>See Ahead Map</h3>
-      <p>Python app</p>
+
+    <article class="card" data-name="see ahead map" data-framework="Python">
+      <div class="card-thumb">
+        <img src="thumbnails/019369d5d1c8.png" alt="See Ahead Map" loading="lazy">
+        <div class="framework-icon" title="Python">Py</div>
+        <div class="status-dot" title="Read-only mirror"></div>
+      </div>
+      <div class="card-body">
+        <div class="card-badges">
+          <span class="badge badge-python">Python</span>
+          <span class="badge badge-port">:7332</span>
+          
+        </div>
+        <div class="card-name">See Ahead Map</div>
+        <div class="card-desc">Python app</div>
+      </div>
+      <div class="recovery-panel">
+        <div class="recovery-btns">
+          <button class="recovery-open" disabled title="Mirror only — visit the local dashboard to open">↗ Open :7332</button>
+          <button class="recovery-start" disabled title="Mirror only — visit the local dashboard to start">▶ Start</button>
+          <button class="recovery-term" disabled title="Mirror only">⬜ Terminal</button>
+        </div>
+      </div>
     </article>
-    <article class="card">
-      <div class="badges"><span class="badge">Python</span></div>
-      <h3>See Ahead Setup</h3>
-      <p>Python app</p>
+
+    <article class="card" data-name="see ahead setup" data-framework="Python">
+      <div class="card-thumb">
+        <img src="thumbnails/aa35a287244f.png" alt="See Ahead Setup" loading="lazy">
+        <div class="framework-icon" title="Python">Py</div>
+        <div class="status-dot" title="Read-only mirror"></div>
+      </div>
+      <div class="card-body">
+        <div class="card-badges">
+          <span class="badge badge-python">Python</span>
+          <span class="badge badge-port">:7331</span>
+          
+        </div>
+        <div class="card-name">See Ahead Setup</div>
+        <div class="card-desc">Python app</div>
+      </div>
+      <div class="recovery-panel">
+        <div class="recovery-btns">
+          <button class="recovery-open" disabled title="Mirror only — visit the local dashboard to open">↗ Open :7331</button>
+          <button class="recovery-start" disabled title="Mirror only — visit the local dashboard to start">▶ Start</button>
+          <button class="recovery-term" disabled title="Mirror only">⬜ Terminal</button>
+        </div>
+      </div>
     </article>
-    <article class="card">
-      <div class="badges"><span class="badge">Python</span></div>
-      <h3>Sentinel Bar</h3>
-      <p>Python project in sentinel-bar</p>
+
+    <article class="card" data-name="sentinel bar" data-framework="Python">
+      <div class="card-thumb">
+        <img src="thumbnails/6fd8d0caf254.png" alt="Sentinel Bar" loading="lazy">
+        <div class="framework-icon" title="Python">Py</div>
+        <div class="status-dot" title="Read-only mirror"></div>
+      </div>
+      <div class="card-body">
+        <div class="card-badges">
+          <span class="badge badge-python">Python</span>
+          
+          
+        </div>
+        <div class="card-name">Sentinel Bar</div>
+        <div class="card-desc">Python project in sentinel-bar</div>
+      </div>
+      <div class="recovery-panel">
+        <div class="recovery-btns">
+          <button class="recovery-open" disabled title="Mirror only — visit the local dashboard to open">↗ Open</button>
+          <button class="recovery-start" disabled title="Mirror only — visit the local dashboard to start">▶ Start</button>
+          <button class="recovery-term" disabled title="Mirror only">⬜ Terminal</button>
+        </div>
+      </div>
     </article>
-    <article class="card">
-      <div class="badges"><span class="badge">Python</span></div>
-      <h3>Spend Chat</h3>
-      <p>Python app</p>
+
+    <article class="card" data-name="spend chat" data-framework="Python">
+      <div class="card-thumb">
+        <img src="thumbnails/3ebbf9bbecfd.png" alt="Spend Chat" loading="lazy">
+        <div class="framework-icon" title="Python">Py</div>
+        <div class="status-dot" title="Read-only mirror"></div>
+      </div>
+      <div class="card-body">
+        <div class="card-badges">
+          <span class="badge badge-python">Python</span>
+          <span class="badge badge-port">:8767</span>
+          
+        </div>
+        <div class="card-name">Spend Chat</div>
+        <div class="card-desc">Python app</div>
+      </div>
+      <div class="recovery-panel">
+        <div class="recovery-btns">
+          <button class="recovery-open" disabled title="Mirror only — visit the local dashboard to open">↗ Open :8767</button>
+          <button class="recovery-start" disabled title="Mirror only — visit the local dashboard to start">▶ Start</button>
+          <button class="recovery-term" disabled title="Mirror only">⬜ Terminal</button>
+        </div>
+      </div>
     </article>
-    <article class="card">
-      <div class="badges"><span class="badge">Python</span></div>
-      <h3>Spend Dashboard</h3>
-      <p>Python app</p>
+
+    <article class="card" data-name="spend dashboard" data-framework="Python">
+      <div class="card-thumb">
+        <img src="thumbnails/e56273e7742c.png" alt="Spend Dashboard" loading="lazy">
+        <div class="framework-icon" title="Python">Py</div>
+        <div class="status-dot" title="Read-only mirror"></div>
+      </div>
+      <div class="card-body">
+        <div class="card-badges">
+          <span class="badge badge-python">Python</span>
+          <span class="badge badge-port">:8769</span>
+          
+        </div>
+        <div class="card-name">Spend Dashboard</div>
+        <div class="card-desc">Python app</div>
+      </div>
+      <div class="recovery-panel">
+        <div class="recovery-btns">
+          <button class="recovery-open" disabled title="Mirror only — visit the local dashboard to open">↗ Open :8769</button>
+          <button class="recovery-start" disabled title="Mirror only — visit the local dashboard to start">▶ Start</button>
+          <button class="recovery-term" disabled title="Mirror only">⬜ Terminal</button>
+        </div>
+      </div>
     </article>
-    <article class="card">
-      <div class="badges"><span class="badge">Python</span></div>
-      <h3>Spend Watch</h3>
-      <p>Python app</p>
+
+    <article class="card" data-name="spend watch" data-framework="Python">
+      <div class="card-thumb">
+        <img src="thumbnails/fed9a7054180.png" alt="Spend Watch" loading="lazy">
+        <div class="framework-icon" title="Python">Py</div>
+        <div class="status-dot" title="Read-only mirror"></div>
+      </div>
+      <div class="card-body">
+        <div class="card-badges">
+          <span class="badge badge-python">Python</span>
+          <span class="badge badge-port">:8780</span>
+          
+        </div>
+        <div class="card-name">Spend Watch</div>
+        <div class="card-desc">Python app</div>
+      </div>
+      <div class="recovery-panel">
+        <div class="recovery-btns">
+          <button class="recovery-open" disabled title="Mirror only — visit the local dashboard to open">↗ Open :8780</button>
+          <button class="recovery-start" disabled title="Mirror only — visit the local dashboard to start">▶ Start</button>
+          <button class="recovery-term" disabled title="Mirror only">⬜ Terminal</button>
+        </div>
+      </div>
     </article>
-    <article class="card">
-      <div class="badges"><span class="badge">Create React App</span></div>
-      <h3>Sql Schema Visualizer</h3>
-      <p>&lt;div align=&quot;center&quot;&gt;</p>
+
+    <article class="card" data-name="sql schema visualizer" data-framework="Create React App">
+      <div class="card-thumb">
+        <img src="thumbnails/4472d220aa6a.png" alt="Sql Schema Visualizer" loading="lazy">
+        <div class="framework-icon" title="Create React App">R</div>
+        <div class="status-dot" title="Read-only mirror"></div>
+      </div>
+      <div class="card-body">
+        <div class="card-badges">
+          <span class="badge badge-react">Create React App</span>
+          <span class="badge badge-port">:3007</span>
+          <span class="badge badge-readme">README</span>
+        </div>
+        <div class="card-name">Sql Schema Visualizer</div>
+        <div class="card-desc"></div>
+      </div>
+      <div class="recovery-panel">
+        <div class="recovery-btns">
+          <button class="recovery-open" disabled title="Mirror only — visit the local dashboard to open">↗ Open :3007</button>
+          <button class="recovery-start" disabled title="Mirror only — visit the local dashboard to start">▶ Start</button>
+          <button class="recovery-term" disabled title="Mirror only">⬜ Terminal</button>
+        </div>
+      </div>
     </article>
-    <article class="card">
-      <div class="badges"><span class="badge">Vite</span></div>
-      <h3>Super Canvas App</h3>
-      <p>This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.</p>
+
+    <article class="card" data-name="super canvas app" data-framework="Vite">
+      <div class="card-thumb">
+        <img src="thumbnails/85c367028d52.png" alt="Super Canvas App" loading="lazy">
+        <div class="framework-icon" title="Vite">V</div>
+        <div class="status-dot" title="Read-only mirror"></div>
+      </div>
+      <div class="card-body">
+        <div class="card-badges">
+          <span class="badge badge-vite">Vite</span>
+          <span class="badge badge-port">:5173</span>
+          <span class="badge badge-readme">README</span>
+        </div>
+        <div class="card-name">Super Canvas App</div>
+        <div class="card-desc">This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.</div>
+      </div>
+      <div class="recovery-panel">
+        <div class="recovery-btns">
+          <button class="recovery-open" disabled title="Mirror only — visit the local dashboard to open">↗ Open :5173</button>
+          <button class="recovery-start" disabled title="Mirror only — visit the local dashboard to start">▶ Start</button>
+          <button class="recovery-term" disabled title="Mirror only">⬜ Terminal</button>
+        </div>
+      </div>
     </article>
-    <article class="card">
-      <div class="badges"><span class="badge">Python</span></div>
-      <h3>Voice Commander</h3>
-      <p>Voice Commander — backend server.</p>
+
+    <article class="card" data-name="voice commander" data-framework="Python">
+      <div class="card-thumb">
+        <img src="thumbnails/c3fa733b6848.png" alt="Voice Commander" loading="lazy">
+        <div class="framework-icon" title="Python">Py</div>
+        <div class="status-dot" title="Read-only mirror"></div>
+      </div>
+      <div class="card-body">
+        <div class="card-badges">
+          <span class="badge badge-python">Python</span>
+          <span class="badge badge-port">:5111</span>
+          
+        </div>
+        <div class="card-name">Voice Commander</div>
+        <div class="card-desc">Voice Commander — backend server.</div>
+      </div>
+      <div class="recovery-panel">
+        <div class="recovery-btns">
+          <button class="recovery-open" disabled title="Mirror only — visit the local dashboard to open">↗ Open :5111</button>
+          <button class="recovery-start" disabled title="Mirror only — visit the local dashboard to start">▶ Start</button>
+          <button class="recovery-term" disabled title="Mirror only">⬜ Terminal</button>
+        </div>
+      </div>
     </article>
-    <article class="card">
-      <div class="badges"><span class="badge">Electron</span></div>
-      <h3>Wait Buddy</h3>
-      <p>Electron project with desktop app</p>
+
+    <article class="card" data-name="wait buddy" data-framework="Electron">
+      <div class="card-thumb">
+        <img src="thumbnails/e3c7edaa10cd.png" alt="Wait Buddy" loading="lazy">
+        <div class="framework-icon" title="Electron">E</div>
+        <div class="status-dot" title="Read-only mirror"></div>
+      </div>
+      <div class="card-body">
+        <div class="card-badges">
+          <span class="badge badge-electron">Electron</span>
+          
+          <span class="badge badge-electron">Desktop</span>
+        </div>
+        <div class="card-name">Wait Buddy</div>
+        <div class="card-desc">Electron project with desktop app</div>
+      </div>
+      <div class="recovery-panel">
+        <div class="recovery-btns">
+          <button class="recovery-open" disabled title="Mirror only — visit the local dashboard to open">↗ Open</button>
+          <button class="recovery-start" disabled title="Mirror only — visit the local dashboard to start">▶ Start</button>
+          <button class="recovery-term" disabled title="Mirror only">⬜ Terminal</button>
+        </div>
+      </div>
     </article>
-    <article class="card">
-      <div class="badges"><span class="badge">Python</span></div>
-      <h3>Whisper</h3>
-      <p>Python app</p>
+
+    <article class="card" data-name="whisper" data-framework="Python">
+      <div class="card-thumb">
+        <img src="thumbnails/160fa921198c.png" alt="Whisper" loading="lazy">
+        <div class="framework-icon" title="Python">Py</div>
+        <div class="status-dot" title="Read-only mirror"></div>
+      </div>
+      <div class="card-body">
+        <div class="card-badges">
+          <span class="badge badge-python">Python</span>
+          <span class="badge badge-port">:8781</span>
+          
+        </div>
+        <div class="card-name">Whisper</div>
+        <div class="card-desc">Python app</div>
+      </div>
+      <div class="recovery-panel">
+        <div class="recovery-btns">
+          <button class="recovery-open" disabled title="Mirror only — visit the local dashboard to open">↗ Open :8781</button>
+          <button class="recovery-start" disabled title="Mirror only — visit the local dashboard to start">▶ Start</button>
+          <button class="recovery-term" disabled title="Mirror only">⬜ Terminal</button>
+        </div>
+      </div>
     </article>
-    <article class="card">
-      <div class="badges"><span class="badge">Python + Flask</span></div>
-      <h3>Wifi Sentinel</h3>
-      <p>WiFi Sentinel - Entry Point</p>
+
+    <article class="card" data-name="wifi sentinel" data-framework="Python + Flask">
+      <div class="card-thumb">
+        <img src="thumbnails/ea2d3051573a.png" alt="Wifi Sentinel" loading="lazy">
+        <div class="framework-icon" title="Python + Flask">Py</div>
+        <div class="status-dot" title="Read-only mirror"></div>
+      </div>
+      <div class="card-body">
+        <div class="card-badges">
+          <span class="badge badge-python">Python + Flask</span>
+          <span class="badge badge-port">:5001</span>
+          
+        </div>
+        <div class="card-name">Wifi Sentinel</div>
+        <div class="card-desc">WiFi Sentinel - Entry Point</div>
+      </div>
+      <div class="recovery-panel">
+        <div class="recovery-btns">
+          <button class="recovery-open" disabled title="Mirror only — visit the local dashboard to open">↗ Open :5001</button>
+          <button class="recovery-start" disabled title="Mirror only — visit the local dashboard to start">▶ Start</button>
+          <button class="recovery-term" disabled title="Mirror only">⬜ Terminal</button>
+        </div>
+      </div>
     </article>
-    <article class="card">
-      <div class="badges"><span class="badge">Python</span></div>
-      <h3>Winsim Repo</h3>
-      <p>A fake Windows desktop where you manage virtual processes, memory, and disk. Missions teach you how operating systems...</p>
+
+    <article class="card" data-name="winsim repo" data-framework="Python">
+      <div class="card-thumb">
+        <img src="thumbnails/c4ec39255c4e.png" alt="Winsim Repo" loading="lazy">
+        <div class="framework-icon" title="Python">Py</div>
+        <div class="status-dot" title="Read-only mirror"></div>
+      </div>
+      <div class="card-body">
+        <div class="card-badges">
+          <span class="badge badge-python">Python</span>
+          
+          <span class="badge badge-readme">README</span>
+        </div>
+        <div class="card-name">Winsim Repo</div>
+        <div class="card-desc">A fake Windows desktop where you manage virtual processes, memory, and disk. Missions teach you how operating systems...</div>
+      </div>
+      <div class="recovery-panel">
+        <div class="recovery-btns">
+          <button class="recovery-open" disabled title="Mirror only — visit the local dashboard to open">↗ Open</button>
+          <button class="recovery-start" disabled title="Mirror only — visit the local dashboard to start">▶ Start</button>
+          <button class="recovery-term" disabled title="Mirror only">⬜ Terminal</button>
+        </div>
+      </div>
     </article>
-    <article class="card">
-      <div class="badges"><span class="badge">Python</span></div>
-      <h3>Wishlist</h3>
-      <p>Python app</p>
+
+    <article class="card" data-name="wishlist" data-framework="Python">
+      <div class="card-thumb">
+        <img src="thumbnails/4439af92de44.png" alt="Wishlist" loading="lazy">
+        <div class="framework-icon" title="Python">Py</div>
+        <div class="status-dot" title="Read-only mirror"></div>
+      </div>
+      <div class="card-body">
+        <div class="card-badges">
+          <span class="badge badge-python">Python</span>
+          <span class="badge badge-port">:8773</span>
+          
+        </div>
+        <div class="card-name">Wishlist</div>
+        <div class="card-desc">Python app</div>
+      </div>
+      <div class="recovery-panel">
+        <div class="recovery-btns">
+          <button class="recovery-open" disabled title="Mirror only — visit the local dashboard to open">↗ Open :8773</button>
+          <button class="recovery-start" disabled title="Mirror only — visit the local dashboard to start">▶ Start</button>
+          <button class="recovery-term" disabled title="Mirror only">⬜ Terminal</button>
+        </div>
+      </div>
     </article>
-    <article class="card">
-      <div class="badges"><span class="badge">Python</span></div>
-      <h3>Wispr Hook (System Tray)</h3>
-      <p>Python app — :?</p>
+
+    <article class="card" data-name="wispr hook (system tray)" data-framework="Python">
+      <div class="card-thumb">
+        <img src="thumbnails/e6c3aa69a194.png" alt="Wispr Hook (System Tray)" loading="lazy">
+        <div class="framework-icon" title="Python">Py</div>
+        <div class="status-dot" title="Read-only mirror"></div>
+      </div>
+      <div class="card-body">
+        <div class="card-badges">
+          <span class="badge badge-python">Python</span>
+          
+          
+        </div>
+        <div class="card-name">Wispr Hook (System Tray)</div>
+        <div class="card-desc">Python app — :?</div>
+      </div>
+      <div class="recovery-panel">
+        <div class="recovery-btns">
+          <button class="recovery-open" disabled title="Mirror only — visit the local dashboard to open">↗ Open</button>
+          <button class="recovery-start" disabled title="Mirror only — visit the local dashboard to start">▶ Start</button>
+          <button class="recovery-term" disabled title="Mirror only">⬜ Terminal</button>
+        </div>
+      </div>
     </article>
-    <article class="card">
-      <div class="badges"><span class="badge">Python</span></div>
-      <h3>Woop</h3>
-      <p>Python app</p>
+
+    <article class="card" data-name="woop" data-framework="Python">
+      <div class="card-thumb">
+        <img src="thumbnails/cf2c22b71e0d.png" alt="Woop" loading="lazy">
+        <div class="framework-icon" title="Python">Py</div>
+        <div class="status-dot" title="Read-only mirror"></div>
+      </div>
+      <div class="card-body">
+        <div class="card-badges">
+          <span class="badge badge-python">Python</span>
+          <span class="badge badge-port">:8785</span>
+          
+        </div>
+        <div class="card-name">Woop</div>
+        <div class="card-desc">Python app</div>
+      </div>
+      <div class="recovery-panel">
+        <div class="recovery-btns">
+          <button class="recovery-open" disabled title="Mirror only — visit the local dashboard to open">↗ Open :8785</button>
+          <button class="recovery-start" disabled title="Mirror only — visit the local dashboard to start">▶ Start</button>
+          <button class="recovery-term" disabled title="Mirror only">⬜ Terminal</button>
+        </div>
+      </div>
     </article>
-    <article class="card">
-      <div class="badges"><span class="badge">XAMPP (Apache + MySQL)</span></div>
-      <h3>XAMPP</h3>
-      <p>Apache + MySQL + PHP + Perl development stack</p>
+
+    <article class="card" data-name="xampp" data-framework="XAMPP (Apache + MySQL)">
+      <div class="card-thumb">
+        <img src="thumbnails/20ff97c98580.png" alt="XAMPP" loading="lazy">
+        <div class="framework-icon" title="XAMPP (Apache + MySQL)">X</div>
+        <div class="status-dot" title="Read-only mirror"></div>
+      </div>
+      <div class="card-body">
+        <div class="card-badges">
+          <span class="badge badge-xampp">XAMPP (Apache + MySQL)</span>
+          <span class="badge badge-port">:80</span><span class="badge badge-port">:443</span><span class="badge badge-port">:3306</span>
+          
+        </div>
+        <div class="card-name">XAMPP</div>
+        <div class="card-desc">Apache + MySQL + PHP + Perl development stack</div>
+      </div>
+      <div class="recovery-panel">
+        <div class="recovery-btns">
+          <button class="recovery-open" disabled title="Mirror only — visit the local dashboard to open">↗ Open :80</button>
+          <button class="recovery-start" disabled title="Mirror only — visit the local dashboard to start">▶ Start</button>
+          <button class="recovery-term" disabled title="Mirror only">⬜ Terminal</button>
+        </div>
+      </div>
     </article>
+  <div class="empty-state" id="emptyState" style="display:none">No projects match your search.</div>
 </main>
-<footer>Baked 2026-04-21 · 55 projects · <a href="https://github.com/lozturner/laurence-localhost-v2">source on GitHub</a></footer>
+
+<footer>
+  Baked 2026-04-21 · 55 projects ·
+  <a href="https://github.com/lozturner/laurence-localhost-v2">source on GitHub</a>
+</footer>
+
+<script>
+  // Client-side search + framework filter. No network calls — pure DOM work.
+  const cards = Array.from(document.querySelectorAll('.card'));
+  const search = document.getElementById('searchInput');
+  const filter = document.getElementById('frameworkFilter');
+  const empty  = document.getElementById('emptyState');
+  function apply() {
+    const q = search.value.trim().toLowerCase();
+    const f = filter.value;
+    let visible = 0;
+    for (const c of cards) {
+      const name = c.dataset.name || '';
+      const fw   = c.dataset.framework || '';
+      const okQ = !q || name.includes(q) || fw.toLowerCase().includes(q);
+      const okF = !f || fw.includes(f);
+      const show = okQ && okF;
+      c.classList.toggle('hidden', !show);
+      if (show) visible++;
+    }
+    empty.style.display = visible === 0 ? 'block' : 'none';
+  }
+  search.addEventListener('input', apply);
+  filter.addEventListener('change', apply);
+</script>
 </body>
 </html>
