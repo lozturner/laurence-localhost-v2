@@ -81,6 +81,36 @@ const UPSTREAM_URL = {
   'XAMPP (Apache + MySQL)': 'https://www.apachefriends.org',
 };
 
+// Repos that have GitHub Pages enabled → can serve live URLs for HTML content
+let PAGES_MAP = {};
+try {
+  const raw = fs.readFileSync(path.join(__dirname, 'pages-map.json'), 'utf8');
+  PAGES_MAP = JSON.parse(raw).pages || {};
+} catch {}
+
+// Extract the slug from a github.com/user/slug URL
+function slugFromUrl(url) {
+  if (!url) return null;
+  const m = url.match(/github\.com\/[^\/]+\/([^\/\s#?]+)/);
+  return m ? m[1] : null;
+}
+
+// Given a project, decide whether/how it can be "run" from the Pages site
+function buildRunUrl(p) {
+  const slug = slugFromUrl(p.githubUrl);
+  if (!slug) return null;
+  const pagesBase = PAGES_MAP[slug];
+  if (!pagesBase) return null;
+
+  // If we have a specific HTML entry file, point at it directly
+  if (p.entryFile && /\.html?$/i.test(p.entryFile)) {
+    const trimmed = p.entryFile.replace(/^\.?\//, '');
+    return pagesBase.replace(/\/$/, '') + '/' + encodeURI(trimmed);
+  }
+  // Otherwise, root of the pages site (will serve index.html if present)
+  return pagesBase;
+}
+
 // Given the project root, name, and startCommand, guess the specific entry file
 // so sibling projects inside a shared parent folder each get a deep link.
 function findEntryFile(projectPath, name, startCommand, explicitEntry) {
@@ -197,18 +227,45 @@ function buildActions(p) {
     return `<a class="recovery-open" href="${esc(p.githubUrl)}" target="_blank" rel="noopener" title="Upstream project homepage">🌐 Visit ${esc(p.framework.split(/\s*\+\s*/)[0])}</a>
             <button class="recovery-term" disabled title="Vendored / third-party — installed locally, not Laurence's source">⬜ Vendored</button>`;
   }
-  // Has GitHub → three live actions, deep-linked to entry file when known
-  if (p.githubUrl) {
-    const primary = p.sourceUrl || p.githubUrl;
-    const primaryLabel = p.entryFile ? `🐙 Open ${esc(p.entryFile.split('/').pop())}` : '🐙 View Source';
-    const primaryTitle = p.entryFile ? `Open ${p.entryFile} on GitHub` : 'Open source on GitHub';
-    return `<a class="recovery-open" href="${esc(primary)}" target="_blank" rel="noopener" title="${primaryTitle}">${primaryLabel}</a>
-            <a class="recovery-start" href="${esc(p.githubUrl)}/archive/HEAD.zip" title="Download ZIP of default branch">⬇ ZIP</a>
-            <button class="recovery-term" onclick="copyClone('${esc(p.githubUrl)}.git', event)" title="Copy git clone command">📋 Clone</button>`;
+
+  if (!p.githubUrl) {
+    return `<button class="recovery-open" disabled title="Not yet uploaded to GitHub — lives locally only">⊘ Not on GitHub</button>
+            <button class="recovery-term" disabled title="Mirror only">⬜ Terminal</button>`;
   }
-  // No remote at all
-  return `<button class="recovery-open" disabled title="Not yet uploaded to GitHub — lives locally only">⊘ Not on GitHub</button>
-          <button class="recovery-term" disabled title="Mirror only">⬜ Terminal</button>`;
+
+  const slug = slugFromUrl(p.githubUrl);
+  const runUrl = buildRunUrl(p);
+  const zip = `${p.githubUrl}/archive/HEAD.zip`;
+  const vercelUrl = `https://vercel.com/new/clone?repository-url=${encodeURIComponent(p.githubUrl)}`;
+  const replitUrl = `https://replit.com/github/${slug ? `${slug}` : ''}`.replace(/\/$/, '');
+  const fw = p.framework || '';
+
+  // Primary RUN button — routed by framework
+  let runBtn;
+  if (runUrl) {
+    // Pages is live for this repo → open the live URL
+    const label = p.entryFile && /\.html?$/i.test(p.entryFile)
+      ? `▶ Run ${esc(p.entryFile.split('/').pop())}`
+      : `▶ Run Live`;
+    runBtn = `<a class="recovery-run" href="${esc(runUrl)}" target="_blank" rel="noopener" title="Open live at ${esc(runUrl)}">${label}</a>`;
+  } else if (p.electronApp || /Electron/i.test(fw)) {
+    // Desktop app — can't run in browser, offer the download
+    runBtn = `<a class="recovery-run desktop" href="${esc(zip)}" title="Desktop app — download ZIP to run locally">💾 Download Desktop</a>`;
+  } else if (/Python/i.test(fw) && !/Static HTML/i.test(fw)) {
+    // Python backend — route to Replit for browser-based fork-and-run
+    runBtn = `<a class="recovery-run replit" href="${esc('https://replit.com/github/lozturner/' + slug)}" target="_blank" rel="noopener" title="Fork and run on Replit">⚡ Run on Replit</a>`;
+  } else if (/Next\.js|Vite|React|Express/i.test(fw)) {
+    runBtn = `<a class="recovery-run vercel" href="${esc(vercelUrl)}" target="_blank" rel="noopener" title="Deploy a fork to Vercel in one click">▶ Deploy on Vercel</a>`;
+  } else {
+    runBtn = `<a class="recovery-run desktop" href="${esc(zip)}" title="Download source as ZIP">💾 Download ZIP</a>`;
+  }
+
+  // Source / ZIP / Clone row — always present
+  const sourcePrimary = p.sourceUrl || p.githubUrl;
+  const sourceLabel = p.entryFile ? `🐙 Source` : `🐙 Source`;
+  return `${runBtn}
+          <a class="recovery-source" href="${esc(sourcePrimary)}" target="_blank" rel="noopener" title="${p.entryFile ? 'Open ' + esc(p.entryFile) + ' on GitHub' : 'Open repo on GitHub'}">${sourceLabel}</a>
+          <button class="recovery-clone" onclick="copyClone('${esc(p.githubUrl)}.git', event)" title="Copy git clone command">📋</button>`;
 }
 
 function renderCard(p) {
@@ -263,6 +320,7 @@ function render(projects) {
   const fwOptions = fwSet.map(f => `<option value="${esc(f)}">${esc(f)}</option>`).join('');
   const withThumbs = projects.filter(p => p.hasThumb).length;
   const withGithub = projects.filter(p => p.githubUrl).length;
+  const runnable   = projects.filter(p => buildRunUrl(p)).length;
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -446,12 +504,41 @@ function render(projects) {
     background: rgba(99,102,241,0.03);
   }
   .recovery-btns { display: flex; gap: 6px; flex-wrap: wrap; }
-  .recovery-open, .recovery-start, .recovery-term {
+  .recovery-open, .recovery-start, .recovery-term,
+  .recovery-run, .recovery-source, .recovery-clone {
     padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 600;
-    border: 1px solid; transition: all 0.2s; white-space: nowrap;
+    border: 1px solid; transition: all 0.15s; white-space: nowrap;
     text-decoration: none; display: inline-flex; align-items: center; justify-content: center;
     font-family: inherit; cursor: pointer;
   }
+
+  /* RUN button — primary, variant-colored by target */
+  .recovery-run {
+    flex: 1; text-align: center;
+    border-color: var(--success); background: var(--success-dim); color: var(--success);
+  }
+  .recovery-run:hover { background: var(--success); color: #000; box-shadow: 0 0 10px rgba(34,197,94,0.3); }
+  .recovery-run.desktop { border-color: #94a3b8; background: rgba(148,163,184,0.12); color: #cbd5e1; }
+  .recovery-run.desktop:hover { background: #94a3b8; color: #0a0a0f; box-shadow: none; }
+  .recovery-run.replit  { border-color: #f26207; background: rgba(242,98,7,0.12); color: #fb923c; }
+  .recovery-run.replit:hover { background: #f26207; color: #fff; box-shadow: 0 0 10px rgba(242,98,7,0.3); }
+  .recovery-run.vercel  { border-color: #fff; background: rgba(255,255,255,0.06); color: #fff; }
+  .recovery-run.vercel:hover { background: #fff; color: #000; }
+
+  /* Source — secondary */
+  .recovery-source {
+    border-color: var(--accent); background: var(--accent-glow); color: var(--accent);
+  }
+  .recovery-source:hover { background: var(--accent); color: #fff; }
+
+  /* Clone — icon-only */
+  .recovery-clone {
+    border-color: var(--border); background: transparent; color: var(--text-secondary);
+    padding: 6px 10px;
+  }
+  .recovery-clone:hover { background: var(--bg-card-hover); color: var(--text-primary); }
+
+  /* Legacy / vendored / disabled states */
   a.recovery-open, a.recovery-start { text-decoration: none; }
   .recovery-open  { border-color: var(--accent); background: var(--accent-glow); color: var(--accent); flex: 1; text-align: center; }
   .recovery-open:hover { background: var(--accent); color: #fff; }
@@ -525,8 +612,8 @@ function render(projects) {
 </header>
 
 <div class="banner">
-  <strong>This is a static snapshot.</strong>
-  Visual mirror of <a href="#" onclick="return false">localhost:4343</a> — the working registry runs locally.
+  <strong>Laurence's project registry.</strong>
+  Every card links to live source, a runnable build, or a download.
   Source: <a href="https://github.com/lozturner/laurence-localhost-v2" target="_blank" rel="noopener">github.com/lozturner/laurence-localhost-v2</a>.
 </div>
 
@@ -534,7 +621,8 @@ function render(projects) {
   <div class="stat"><span class="stat-value">${projects.length}</span> Projects</div>
   <div class="stat"><span class="stat-value">${fwSet.length}</span> Frameworks</div>
   <div class="stat"><span class="stat-value mirrored">${withThumbs}</span> With Thumbnails</div>
-  <div class="stat"><span class="stat-value" style="color:var(--success)">${withGithub}</span> On GitHub</div>
+  <div class="stat"><span class="stat-value" style="color:var(--accent)">${withGithub}</span> On GitHub</div>
+  <div class="stat"><span class="stat-value" style="color:var(--success)">${runnable}</span> Run in Browser</div>
 </div>
 
 <main id="grid">
