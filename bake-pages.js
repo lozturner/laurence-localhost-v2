@@ -10,6 +10,7 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 
+const GH_USER = 'lozturner';
 const OUT     = path.join(__dirname, 'pages-bake');
 const THUMBS_IN  = path.join(__dirname, 'public', 'thumbnails');
 const THUMBS_OUT = path.join(OUT, 'thumbnails');
@@ -222,10 +223,10 @@ function frameworkIcon(fw) {
 }
 
 function buildActions(p) {
-  // Upstream / vendored → just a "Visit" link to the upstream homepage
+  // Upstream / vendored → also gets a "▶ Run" going to the vendor homepage
   if (p.isUpstream && p.githubUrl) {
-    return `<a class="recovery-open" href="${esc(p.githubUrl)}" target="_blank" rel="noopener" title="Upstream project homepage">🌐 Visit ${esc(p.framework.split(/\s*\+\s*/)[0])}</a>
-            <button class="recovery-term" disabled title="Vendored / third-party — installed locally, not Laurence's source">⬜ Vendored</button>`;
+    return `<a class="recovery-run node" href="${esc(p.githubUrl)}" target="_blank" rel="noopener" title="Vendored — opens the upstream project homepage">▶ Run</a>
+            <a class="recovery-source" href="${esc(p.githubUrl)}" target="_blank" rel="noopener" title="Upstream homepage">🐙 Source</a>`;
   }
 
   if (!p.githubUrl) {
@@ -236,28 +237,27 @@ function buildActions(p) {
   const slug = slugFromUrl(p.githubUrl);
   const runUrl = buildRunUrl(p);
   const zip = `${p.githubUrl}/archive/HEAD.zip`;
-  const vercelUrl = `https://vercel.com/new/clone?repository-url=${encodeURIComponent(p.githubUrl)}`;
-  const replitUrl = `https://replit.com/github/${slug ? `${slug}` : ''}`.replace(/\/$/, '');
   const fw = p.framework || '';
 
-  // Primary RUN button — routed by framework
+  // One uniform "▶ Run" button on every card. Destination + tooltip are
+  // routed by framework, but the label is consistent so the user can just click.
   let runBtn;
   if (runUrl) {
-    // Pages is live for this repo → open the live URL
-    const label = p.entryFile && /\.html?$/i.test(p.entryFile)
-      ? `▶ Run ${esc(p.entryFile.split('/').pop())}`
-      : `▶ Run Live`;
-    runBtn = `<a class="recovery-run" href="${esc(runUrl)}" target="_blank" rel="noopener" title="Open live at ${esc(runUrl)}">${label}</a>`;
+    // Live on Pages → open the actual URL
+    runBtn = `<a class="recovery-run" href="${esc(runUrl)}" target="_blank" rel="noopener" title="Opens live at ${esc(runUrl)}">▶ Run</a>`;
+  } else if (p.entryFile && /\.html?$/i.test(p.entryFile) && slug) {
+    // HTML entry but no Pages yet → render live via raw.githack CDN
+    const raw = `https://raw.githack.com/${GH_USER}/${slug}/HEAD/${encodeURI(p.entryFile.replace(/^\.?\//, ''))}`;
+    runBtn = `<a class="recovery-run" href="${esc(raw)}" target="_blank" rel="noopener" title="Renders live via raw.githack CDN">▶ Run</a>`;
   } else if (p.electronApp || /Electron/i.test(fw)) {
-    // Desktop app — can't run in browser, offer the download
-    runBtn = `<a class="recovery-run desktop" href="${esc(zip)}" title="Desktop app — download ZIP to run locally">💾 Download Desktop</a>`;
-  } else if (/Python/i.test(fw) && !/Static HTML/i.test(fw)) {
-    // Python backend — route to Replit for browser-based fork-and-run
-    runBtn = `<a class="recovery-run replit" href="${esc('https://replit.com/github/lozturner/' + slug)}" target="_blank" rel="noopener" title="Fork and run on Replit">⚡ Run on Replit</a>`;
-  } else if (/Next\.js|Vite|React|Express/i.test(fw)) {
-    runBtn = `<a class="recovery-run vercel" href="${esc(vercelUrl)}" target="_blank" rel="noopener" title="Deploy a fork to Vercel in one click">▶ Deploy on Vercel</a>`;
+    runBtn = `<a class="recovery-run desktop" href="${esc(zip)}" title="Desktop app — downloads the source ZIP to run locally">▶ Run</a>`;
+  } else if (/Python|Flask|Django/i.test(fw)) {
+    runBtn = `<a class="recovery-run replit" href="${esc('https://replit.com/github/' + GH_USER + '/' + slug)}" target="_blank" rel="noopener" title="Opens a Python sandbox on Replit to fork &amp; run">▶ Run</a>`;
+  } else if (/Next\.js|Vite|React|Express|Node\.js/i.test(fw)) {
+    // Node apps need a build — open repo (with README) for install instructions
+    runBtn = `<a class="recovery-run node" href="${esc(p.githubUrl)}" target="_blank" rel="noopener" title="Node/JS app — clone &amp; run locally per README">▶ Run</a>`;
   } else {
-    runBtn = `<a class="recovery-run desktop" href="${esc(zip)}" title="Download source as ZIP">💾 Download ZIP</a>`;
+    runBtn = `<a class="recovery-run desktop" href="${esc(zip)}" title="Download source ZIP">▶ Run</a>`;
   }
 
   // Source / ZIP / Clone row — always present
