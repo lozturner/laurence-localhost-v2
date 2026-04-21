@@ -1,0 +1,1212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Laurence Localhost v2 — Turner Foundry</title>
+<style>
+  :root {
+    --bg-primary: #0a0a0f;
+    --bg-secondary: #0f0f17;
+    --bg-card: #12121a;
+    --bg-card-hover: #1a1a25;
+    --accent: #6366f1;
+    --accent-dim: #4f46e5;
+    --accent-glow: rgba(99, 102, 241, 0.15);
+    --danger: #ef4444;
+    --danger-dim: rgba(239, 68, 68, 0.15);
+    --warning: #f59e0b;
+    --success: #22c55e;
+    --success-dim: rgba(34, 197, 94, 0.15);
+    --text-primary: #e2e8f0;
+    --text-secondary: #94a3b8;
+    --text-muted: #64748b;
+    --border: #1e293b;
+    --border-light: #334155;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  /* ── Task Manager ──────────────────────────────────────────────── */
+  .task-manager {
+    background: #09090e;
+    border-bottom: 2px solid var(--accent);
+    position: sticky; top: 0; z-index: 200;
+    box-shadow: 0 2px 20px rgba(99,102,241,0.15);
+  }
+  .tm-header {
+    display: flex; align-items: center; gap: 12px;
+    padding: 8px 16px; flex-wrap: wrap;
+  }
+  .tm-title {
+    font-size: 12px; font-weight: 700; color: var(--accent);
+    letter-spacing: 1px; text-transform: uppercase; white-space: nowrap;
+  }
+  .tm-summary { display: flex; gap: 6px; flex-shrink: 0; }
+  .tm-pill {
+    padding: 2px 10px; border-radius: 20px; font-size: 11px;
+    font-weight: 700; border: 1px solid; white-space: nowrap;
+  }
+  .tm-running  { background: var(--success-dim); border-color: rgba(34,197,94,0.4); color: var(--success); }
+  .tm-stopped  { background: rgba(148,163,184,0.08); border-color: var(--border); color: var(--text-muted); }
+  .tm-conflict { background: var(--danger-dim); border-color: rgba(239,68,68,0.4); color: var(--danger); }
+  .tm-conflict.none { background: var(--success-dim); border-color: rgba(34,197,94,0.3); color: var(--success); }
+
+  .tm-actions { display: flex; gap: 6px; margin-left: auto; }
+  .tm-btn {
+    padding: 5px 12px; border-radius: 6px; font-size: 12px; font-weight: 600;
+    cursor: pointer; border: 1px solid; transition: all 0.15s; white-space: nowrap;
+  }
+  .tm-btn-start  { background: var(--success-dim); border-color: rgba(34,197,94,0.5); color: var(--success); }
+  .tm-btn-start:hover { background: var(--success); color: #000; }
+  .tm-btn-fix    { background: var(--danger-dim); border-color: rgba(239,68,68,0.4); color: var(--danger); }
+  .tm-btn-fix:hover { background: var(--danger); color: #fff; }
+  .tm-btn-fix.clean { background: var(--success-dim); border-color: rgba(34,197,94,0.3); color: var(--success); cursor: default; }
+  .tm-btn-scan   { background: var(--accent-glow); border-color: rgba(99,102,241,0.4); color: var(--accent); }
+  .tm-btn-scan:hover { background: var(--accent); color: #fff; }
+  .tm-collapse {
+    background: transparent; border: 1px solid var(--border); color: var(--text-muted);
+    border-radius: 4px; padding: 2px 8px; cursor: pointer; font-size: 11px;
+    transition: all 0.2s; flex-shrink: 0;
+  }
+  .tm-collapse:hover { border-color: var(--accent); color: var(--accent); }
+
+  .tm-body { padding: 0 16px 8px; }
+  .task-manager.collapsed .tm-body { display: none; }
+  .task-manager.collapsed .tm-collapse { transform: rotate(180deg); }
+
+  /* Running process rows */
+  .tm-running-list {
+    display: flex; flex-wrap: wrap; gap: 8px; padding: 4px 0;
+  }
+  .tm-empty-running {
+    font-size: 12px; color: var(--text-muted); padding: 4px 0;
+  }
+  .tm-proc {
+    display: flex; align-items: center; gap: 8px;
+    background: var(--bg-card); border: 1px solid rgba(34,197,94,0.25);
+    border-radius: 8px; padding: 6px 10px; min-width: 220px; max-width: 340px;
+    transition: border-color 0.2s;
+  }
+  .tm-proc:hover { border-color: rgba(34,197,94,0.5); }
+  .tm-proc-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--success); flex-shrink: 0;
+    box-shadow: 0 0 6px rgba(34,197,94,0.6); animation: pulse 2s infinite; }
+  .tm-proc-name { font-size: 12px; font-weight: 600; color: var(--text-primary); flex: 1; min-width: 0;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .tm-proc-port { font-size: 11px; color: var(--accent); font-family: monospace; flex-shrink: 0; }
+  .tm-proc-res  { font-size: 10px; color: var(--text-muted); flex-shrink: 0; white-space: nowrap; }
+  .tm-proc-bar  { width: 40px; height: 4px; background: var(--border); border-radius: 2px; flex-shrink: 0; }
+  .tm-proc-bar-fill { height: 100%; border-radius: 2px; background: var(--success); transition: width 0.5s; }
+  .tm-proc-bar-fill.hot { background: var(--warning); }
+  .tm-proc-bar-fill.critical { background: var(--danger); }
+  .tm-proc-open { padding: 2px 6px; font-size: 10px; background: transparent;
+    border: 1px solid var(--border); border-radius: 4px; color: var(--text-muted);
+    cursor: pointer; flex-shrink: 0; }
+  .tm-proc-open:hover { border-color: var(--accent); color: var(--accent); }
+  .tm-proc-stop { padding: 2px 6px; font-size: 10px; background: transparent;
+    border: 1px solid rgba(239,68,68,0.3); border-radius: 4px; color: var(--danger);
+    cursor: pointer; flex-shrink: 0; }
+  .tm-proc-stop:hover { background: var(--danger); color: #fff; }
+
+  /* Conflict resolution list */
+  .tm-conflict-list {
+    margin-top: 6px; padding: 8px 10px;
+    background: rgba(239,68,68,0.05); border: 1px solid rgba(239,68,68,0.2);
+    border-radius: 8px;
+  }
+  .tm-conflict-title { font-size: 11px; font-weight: 700; color: var(--danger); margin-bottom: 6px;
+    text-transform: uppercase; letter-spacing: 0.5px; }
+  .tm-conflict-item { font-size: 12px; color: var(--text-secondary); display: flex;
+    align-items: center; gap: 8px; padding: 2px 0; }
+  .tm-conflict-port { font-family: monospace; color: var(--danger); font-weight: 700; }
+  .tm-conflict-names { flex: 1; }
+  .tm-resolve-result { margin-top: 6px; font-size: 11px; color: var(--success);
+    border-top: 1px solid var(--border); padding-top: 6px; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    min-height: 100vh;
+  }
+
+  /* Header */
+  header {
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border);
+    padding: 16px 24px;
+    position: sticky; top: 0; z-index: 100;
+  }
+  .header-top {
+    display: flex; align-items: center; gap: 16px; margin-bottom: 12px;
+  }
+  .header-top h1 {
+    font-size: 20px; font-weight: 700; color: var(--text-primary);
+    display: flex; align-items: center; gap: 8px; white-space: nowrap;
+  }
+  .header-top h1 span { color: var(--accent); }
+  .controls {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap; width: 100%;
+  }
+  .search-input {
+    flex: 1; min-width: 200px; padding: 8px 14px;
+    background: var(--bg-primary); border: 1px solid var(--border);
+    border-radius: 8px; color: var(--text-primary); font-size: 14px;
+    outline: none; transition: border-color 0.2s;
+  }
+  .search-input:focus { border-color: var(--accent); }
+  .search-input::placeholder { color: var(--text-muted); }
+  select {
+    padding: 8px 12px; background: var(--bg-primary); border: 1px solid var(--border);
+    border-radius: 8px; color: var(--text-primary); font-size: 14px; cursor: pointer;
+  }
+  .btn {
+    padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 500;
+    cursor: pointer; border: 1px solid var(--border); transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .btn-primary { background: var(--accent); border-color: var(--accent); color: white; }
+  .btn-primary:hover { background: var(--accent-dim); }
+  .btn-ghost { background: transparent; color: var(--text-secondary); }
+  .btn-ghost:hover { background: var(--bg-card); color: var(--text-primary); }
+  .btn-danger { background: var(--danger-dim); border-color: var(--danger); color: var(--danger); }
+  .btn-danger:hover { background: var(--danger); color: white; }
+  .btn-sm { padding: 5px 10px; font-size: 12px; }
+
+  /* Dev Mode Toggle */
+  .dev-toggle {
+    display: flex; align-items: center; gap: 8px; margin-left: auto;
+  }
+  .dev-toggle label {
+    font-size: 13px; color: var(--text-secondary); font-weight: 500;
+    cursor: pointer; user-select: none;
+  }
+  .toggle-switch {
+    position: relative; width: 44px; height: 24px; cursor: pointer;
+  }
+  .toggle-switch input { display: none; }
+  .toggle-slider {
+    position: absolute; inset: 0; background: var(--border);
+    border-radius: 12px; transition: 0.3s;
+  }
+  .toggle-slider::before {
+    content: ''; position: absolute; width: 18px; height: 18px;
+    left: 3px; top: 3px; background: var(--text-secondary);
+    border-radius: 50%; transition: 0.3s;
+  }
+  .toggle-switch input:checked + .toggle-slider { background: var(--danger); }
+  .toggle-switch input:checked + .toggle-slider::before {
+    transform: translateX(20px); background: white;
+  }
+  .dev-badge {
+    display: none; padding: 2px 8px; border-radius: 4px; font-size: 11px;
+    font-weight: 700; background: var(--danger-dim); color: var(--danger);
+    text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  body.dev-mode .dev-badge { display: inline-block; }
+  .foundry-badge {
+    display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 10px;
+    font-weight: 700; background: linear-gradient(135deg, #b45309, #92400e);
+    color: #fef3c7; letter-spacing: 1px; text-transform: uppercase;
+    border: 1px solid #78350f; vertical-align: middle;
+    box-shadow: 0 0 8px rgba(180, 83, 9, 0.3);
+  }
+
+  /* Stats Bar */
+  .stats-bar {
+    display: flex; gap: 20px; padding: 12px 24px;
+    background: var(--bg-secondary); border-bottom: 1px solid var(--border);
+  }
+  .stat {
+    display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text-secondary);
+  }
+  .stat-value { font-weight: 700; color: var(--text-primary); font-size: 16px; }
+  .stat-value.conflict { color: var(--danger); }
+  .stat-value.running { color: var(--success); }
+
+  /* Conflict Banner */
+  .conflict-banner {
+    display: none; padding: 12px 24px;
+    background: var(--danger-dim); border-bottom: 1px solid rgba(239,68,68,0.3);
+    font-size: 13px; color: var(--danger); line-height: 1.5;
+  }
+  .conflict-banner.visible { display: flex; align-items: center; gap: 12px; }
+  .conflict-banner strong { white-space: nowrap; }
+  .conflict-details { flex: 1; }
+  .conflict-port {
+    display: inline-block; padding: 1px 6px; background: rgba(239,68,68,0.2);
+    border-radius: 4px; font-weight: 600; margin: 0 2px;
+  }
+
+  /* Grid */
+  main {
+    padding: 24px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 16px;
+  }
+
+  /* Cards */
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    transition: all 0.2s;
+    display: flex; flex-direction: column;
+  }
+  .card:hover {
+    border-color: var(--border-light);
+    background: var(--bg-card-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+  }
+  .card.has-conflict { border-color: rgba(239,68,68,0.3); }
+  .card[data-status="running"] {
+    border-color: rgba(34,197,94,0.25);
+  }
+  .card[data-status="running"]:hover {
+    border-color: rgba(34,197,94,0.5);
+    box-shadow: 0 4px 20px rgba(34,197,94,0.1);
+  }
+
+  /* Card Thumbnail */
+  .card-thumb {
+    height: 160px; background: var(--bg-primary);
+    position: relative; overflow: hidden;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .card-thumb img {
+    width: 100%; height: 100%; object-fit: cover;
+  }
+  .card-thumb .placeholder {
+    font-size: 48px; opacity: 0.15;
+  }
+  .card-thumb .framework-icon {
+    position: absolute; top: 8px; left: 8px;
+    font-size: 20px; background: rgba(0,0,0,0.6);
+    padding: 4px 8px; border-radius: 6px;
+  }
+  .status-dot {
+    position: absolute; top: 10px; right: 10px;
+    width: 10px; height: 10px; border-radius: 50%;
+    background: var(--text-muted); border: 2px solid var(--bg-card);
+  }
+  .status-dot.running {
+    background: var(--success);
+    box-shadow: 0 0 8px rgba(34,197,94,0.5);
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { box-shadow: 0 0 8px rgba(34,197,94,0.3); }
+    50% { box-shadow: 0 0 16px rgba(34,197,94,0.6); }
+  }
+  .thumb-actions {
+    position: absolute; bottom: 8px; right: 8px;
+    display: flex; gap: 4px; opacity: 0; transition: opacity 0.2s;
+  }
+  .card:hover .thumb-actions { opacity: 1; }
+
+  /* Card Body */
+  .card-body { padding: 14px; flex: 1; display: flex; flex-direction: column; }
+  .card-badges {
+    display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px;
+  }
+  .badge {
+    padding: 2px 8px; border-radius: 4px; font-size: 11px;
+    font-weight: 600; border: 1px solid;
+  }
+  .badge-framework {
+    background: var(--accent-glow); border-color: rgba(99,102,241,0.3); color: var(--accent);
+  }
+  .badge-nextjs { background: rgba(0,0,0,0.3); border-color: #333; color: #fff; }
+  .badge-vite { background: rgba(189,147,249,0.15); border-color: rgba(189,147,249,0.3); color: #bd93f9; }
+  .badge-react { background: rgba(97,218,251,0.15); border-color: rgba(97,218,251,0.3); color: #61dafb; }
+  .badge-express { background: rgba(34,197,94,0.15); border-color: rgba(34,197,94,0.3); color: #22c55e; }
+  .badge-electron { background: rgba(148,163,184,0.15); border-color: rgba(148,163,184,0.3); color: #94a3b8; }
+  .badge-python { background: rgba(250,204,21,0.15); border-color: rgba(250,204,21,0.3); color: #facc15; }
+  .badge-django { background: rgba(16,185,129,0.15); border-color: rgba(16,185,129,0.3); color: #10b981; }
+  .badge-docker { background: rgba(59,130,246,0.15); border-color: rgba(59,130,246,0.3); color: #3b82f6; }
+  .badge-static { background: rgba(148,163,184,0.1); border-color: rgba(148,163,184,0.2); color: #94a3b8; }
+  .badge-nodered { background: rgba(239,68,68,0.15); border-color: rgba(239,68,68,0.3); color: #ef4444; }
+  .badge-xampp { background: rgba(251,146,60,0.15); border-color: rgba(251,146,60,0.3); color: #fb923c; }
+  .badge-flask { background: rgba(148,163,184,0.15); border-color: rgba(148,163,184,0.3); color: #cbd5e1; }
+
+  .badge-port {
+    background: rgba(148,163,184,0.1); border-color: var(--border);
+    color: var(--text-secondary); font-family: 'Courier New', monospace;
+  }
+  .badge-port.conflict {
+    background: var(--danger-dim); border-color: rgba(239,68,68,0.4);
+    color: var(--danger); animation: conflict-pulse 3s infinite;
+  }
+  @keyframes conflict-pulse {
+    0%, 100% { border-color: rgba(239,68,68,0.3); }
+    50% { border-color: rgba(239,68,68,0.7); }
+  }
+
+  .card-name {
+    font-size: 16px; font-weight: 600; margin-bottom: 4px;
+    color: var(--text-primary);
+  }
+  .card-desc {
+    font-size: 13px; color: var(--text-secondary); margin-bottom: 8px;
+    line-height: 1.4; flex: 1;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .card-path {
+    font-size: 11px; color: var(--text-muted); font-family: 'Courier New', monospace;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    padding-top: 8px; border-top: 1px solid var(--border); margin-top: auto;
+  }
+
+  /* Recovery Panel — always shown for stopped projects */
+  .recovery-panel {
+    padding: 10px 14px; border-top: 1px solid rgba(99,102,241,0.15);
+    background: rgba(99,102,241,0.04);
+    display: none; flex-direction: column; gap: 8px;
+  }
+  .card[data-status="stopped"] .recovery-panel { display: flex; }
+  .card[data-status="running"] .recovery-panel { display: none; }
+  .recovery-cmd {
+    font-family: 'Courier New', monospace; font-size: 11px;
+    color: var(--text-muted); background: var(--bg-primary);
+    padding: 5px 10px; border-radius: 6px; border: 1px solid var(--border);
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    cursor: pointer; transition: border-color 0.2s;
+  }
+  .recovery-cmd:hover { border-color: var(--accent); color: var(--text-secondary); }
+  .recovery-btns { display: flex; gap: 6px; flex-wrap: wrap; }
+  .recovery-open {
+    flex: 1; padding: 6px 12px; border-radius: 6px; font-size: 12px;
+    font-weight: 600; cursor: pointer; border: 1px solid var(--accent);
+    background: var(--accent-glow); color: var(--accent);
+    transition: all 0.2s; text-align: center;
+  }
+  .recovery-open:hover { background: var(--accent); color: white; }
+  .recovery-start {
+    padding: 6px 12px; border-radius: 6px; font-size: 12px;
+    font-weight: 600; cursor: pointer; border: 1px solid var(--success);
+    background: var(--success-dim); color: var(--success);
+    transition: all 0.2s;
+  }
+  .recovery-start:hover { background: var(--success); color: black; }
+  .recovery-term {
+    padding: 6px 10px; border-radius: 6px; font-size: 12px;
+    cursor: pointer; border: 1px solid var(--border);
+    background: transparent; color: var(--text-secondary);
+    transition: all 0.2s;
+  }
+  .recovery-term:hover { background: var(--bg-card-hover); color: var(--text-primary); }
+
+  /* Dev Mode Actions */
+  .dev-actions {
+    display: none; padding: 10px 14px; border-top: 1px solid var(--border);
+    background: rgba(239,68,68,0.03);
+    gap: 6px; flex-wrap: wrap;
+  }
+  body.dev-mode .dev-actions { display: flex; }
+
+  /* Loading */
+  .loading {
+    display: flex; align-items: center; justify-content: center;
+    min-height: 300px; font-size: 16px; color: var(--text-muted);
+  }
+  .spinner {
+    width: 32px; height: 32px; border: 3px solid var(--border);
+    border-top-color: var(--accent); border-radius: 50%;
+    animation: spin 0.8s linear infinite; margin-right: 12px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Toast */
+  .toast-container {
+    position: fixed; bottom: 24px; right: 24px; z-index: 200;
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  .toast {
+    padding: 12px 20px; border-radius: 8px; font-size: 13px;
+    background: var(--bg-card); border: 1px solid var(--border);
+    color: var(--text-primary); box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+    animation: slideIn 0.3s ease;
+  }
+  .toast.success { border-color: rgba(34,197,94,0.3); }
+  .toast.error { border-color: rgba(239,68,68,0.3); }
+  @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } }
+
+  /* Modal */
+  .modal-overlay {
+    display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7);
+    z-index: 300; align-items: center; justify-content: center;
+  }
+  .modal-overlay.visible { display: flex; }
+  .modal {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 12px; padding: 24px; max-width: 480px; width: 90%;
+  }
+  .modal h3 { margin-bottom: 12px; color: var(--danger); }
+  .modal p { font-size: 14px; color: var(--text-secondary); margin-bottom: 16px; line-height: 1.5; }
+  .modal .modal-path { font-family: monospace; font-size: 12px; color: var(--text-muted); word-break: break-all; }
+  .modal-btns { display: flex; gap: 8px; justify-content: flex-end; }
+
+  /* Empty state */
+  .empty-state {
+    grid-column: 1 / -1; text-align: center; padding: 60px;
+    color: var(--text-muted); font-size: 15px;
+  }
+</style>
+</head>
+<body>
+
+<!-- ══ TASK MANAGER ══════════════════════════════════════════════════════════ -->
+<div id="taskManager" class="task-manager">
+  <div class="tm-header">
+    <span class="tm-title">⬡ Task Manager</span>
+    <div class="tm-summary">
+      <span class="tm-pill tm-running" id="tmRunning">0 Live</span>
+      <span class="tm-pill tm-stopped" id="tmStopped">0 Stopped</span>
+      <span class="tm-pill tm-conflict" id="tmConflicts">0 Conflicts</span>
+    </div>
+    <div class="tm-actions">
+      <button class="tm-btn tm-btn-start" onclick="startAll()" title="Start every project that has a start command">▶ Start All</button>
+      <button class="tm-btn tm-btn-fix" id="fixBtn" onclick="fixConflicts()" title="Auto-patch port conflicts in config files">⚡ Fix Conflicts</button>
+      <button class="tm-btn tm-btn-scan" onclick="rescan()" title="Re-scan K:\\Projects and Desktop">↺ Re-scan</button>
+    </div>
+    <button class="tm-collapse" id="tmToggle" onclick="toggleTM()" title="Collapse task manager">▲</button>
+  </div>
+  <div class="tm-body" id="tmBody">
+    <div class="tm-running-list" id="tmRunningList">
+      <div class="tm-empty-running">No projects running — click ▶ Start All or start individually below</div>
+    </div>
+    <div class="tm-conflict-list" id="tmConflictList" style="display:none"></div>
+  </div>
+</div>
+
+<header>
+  <div class="header-top">
+    <h1><span>⚒</span> Laurence Localhost <span style="color:var(--accent)">v2</span> <span class="foundry-badge">TURNER FOUNDRY</span> <span id="appVersion" style="font-size:12px;font-weight:400;color:var(--text-muted);margin-left:4px"></span><span class="dev-badge">DEV MODE</span></h1>
+  </div>
+  <div class="controls">
+    <input type="text" class="search-input" id="searchInput" placeholder="Search projects by name, framework, or path...">
+    <select id="frameworkFilter">
+      <option value="">All Frameworks</option>
+    </select>
+    <button class="btn btn-primary" onclick="rescan()">Re-scan</button>
+    <button class="btn btn-ghost" onclick="generateThumbnails()" id="thumbBtn">Snap All</button>
+    <div class="dev-toggle">
+      <label for="devMode">Dev Mode</label>
+      <div class="toggle-switch">
+        <input type="checkbox" id="devMode" onchange="toggleDevMode(this.checked)">
+        <div class="toggle-slider"></div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="stats-bar">
+  <div class="stat"><span class="stat-value" id="totalCount">-</span> Projects</div>
+  <div class="stat"><span class="stat-value conflict" id="conflictCount">-</span> Port Conflicts</div>
+  <div class="stat"><span class="stat-value running" id="runningCount">-</span> Running</div>
+</div>
+
+<div class="conflict-banner" id="conflictBanner">
+  <strong>Port Conflicts</strong>
+  <div class="conflict-details" id="conflictDetails"></div>
+</div>
+
+<main id="grid">
+  <div class="loading"><div class="spinner"></div>Scanning filesystem for projects...</div>
+</main>
+
+<div class="modal-overlay" id="deleteModal">
+  <div class="modal">
+    <h3>Delete Project</h3>
+    <p>This will permanently delete the entire project folder and all its contents. This action cannot be undone.</p>
+    <p class="modal-path" id="deleteModalPath"></p>
+    <div class="modal-btns">
+      <button class="btn btn-ghost" onclick="closeDeleteModal()">Cancel</button>
+      <button class="btn btn-danger" id="confirmDeleteBtn">Delete Forever</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="moveModal">
+  <div class="modal">
+    <h3>Move Project</h3>
+    <p>Enter the destination path:</p>
+    <input type="text" class="search-input" id="moveDestination" style="width:100%;margin-bottom:16px" placeholder="C:\Users\123\Desktop\new-location">
+    <div class="modal-btns">
+      <button class="btn btn-ghost" onclick="closeMoveModal()">Cancel</button>
+      <button class="btn btn-primary" id="confirmMoveBtn">Move</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-container" id="toasts"></div>
+
+<script>
+let projects = [];
+let conflicts = {};
+let searchQuery = '';
+let frameworkFilter = '';
+
+// Strip markdown so README-sourced descriptions display cleanly
+function stripMarkdown(text) {
+  if (!text) return '';
+  return text
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+    .replace(/!\[[^\]]*\]\([^)]+\)/g, '')
+    .replace(/`{1,3}([^`]*)`{1,3}/g, '$1')
+    .replace(/\*\*([^*]+)\*\*/g, '$1')
+    .replace(/\*([^*]+)\*/g, '$1')
+    .replace(/_{1,2}([^_]+)_{1,2}/g, '$1')
+    .replace(/#+\s+/g, '')
+    .replace(/\s{2,}/g, ' ')
+    .trim();
+}
+
+// Fetch and show version in header
+async function loadVersion() {
+  try {
+    const res = await fetch('/api/status');
+    const data = await res.json();
+    if (data.version) {
+      document.getElementById('appVersion').textContent = 'v' + data.version;
+    }
+  } catch {}
+}
+
+const FRAMEWORK_BADGES = {
+  'Next.js': 'badge-nextjs',
+  'Vite': 'badge-vite',
+  'React': 'badge-react',
+  'Create React App': 'badge-react',
+  'Express': 'badge-express',
+  'Electron': 'badge-electron',
+  'Python': 'badge-python',
+  'Django': 'badge-django',
+  'Flask': 'badge-flask',
+  'Docker': 'badge-docker',
+  'Static HTML': 'badge-static',
+  'Node-RED': 'badge-nodered',
+  'XAMPP': 'badge-xampp',
+};
+
+const FRAMEWORK_ICONS = {
+  'Next.js': 'N',
+  'Vite': 'V',
+  'React': 'R',
+  'Create React App': 'R',
+  'Express': 'Ex',
+  'Electron': 'E',
+  'Python': 'Py',
+  'Django': 'Dj',
+  'Flask': 'Fl',
+  'Docker': 'D',
+  'Static HTML': 'H',
+  'Node-RED': 'NR',
+  'XAMPP': 'X',
+  'Three.js': '3D',
+  'Tailwind': 'Tw',
+};
+
+function getFrameworkBadgeClass(framework) {
+  for (const [key, cls] of Object.entries(FRAMEWORK_BADGES)) {
+    if (framework.includes(key)) return cls;
+  }
+  return 'badge-framework';
+}
+
+function getFrameworkIcon(framework) {
+  for (const [key, icon] of Object.entries(FRAMEWORK_ICONS)) {
+    if (framework.includes(key)) return icon;
+  }
+  return '?';
+}
+
+function isPortConflicted(port) {
+  return conflicts[port] && conflicts[port].length > 1;
+}
+
+function getProjectUrl(p) {
+  if (p.launchUrl) return p.launchUrl;
+  if (p.status === 'running' && p.activePort) return `http://localhost:${p.activePort}`;
+  if (p.ports && p.ports.length > 0) return `http://localhost:${p.ports[0]}`;
+  return null;
+}
+
+function renderCard(p) {
+  const hasConflict = p.ports.some(port => isPortConflicted(port));
+  const portBadges = p.ports.map(port => {
+    const conflicted = isPortConflicted(port);
+    return `<span class="badge badge-port${conflicted ? ' conflict' : ''}" title="${p.portSources[port] || ''}${conflicted ? ' | CONFLICT: shared with ' + conflicts[port].filter(n => n !== p.name).join(', ') : ''}">:${port}</span>`;
+  }).join('');
+
+  const projectUrl = getProjectUrl(p);
+  const thumbSrc = p.thumbnailUrl || `/thumbnails/${p.id}.png`;
+
+  // Recovery panel: start command or open URL
+  const cmdDisplay = p.startCommand ? escapeHtml(p.startCommand) : (projectUrl ? `open ${projectUrl}` : 'No start command');
+  const recoveryPanel = !p.electronApp ? `
+    <div class="recovery-panel">
+      <div class="recovery-btns">
+        ${projectUrl ? `<button class="recovery-open" onclick="openProject(event,'${escapeHtml(projectUrl)}')">↗ Open :${p.ports[0] || '?'}</button>` : ''}
+        ${p.startCommand ? `<button class="recovery-start" onclick="startProject(event,'${p.id}')">▶ Start</button>` : ''}
+        <button class="recovery-term" onclick="openTerminal(event,'${p.id}')" title="Open terminal here">⬜ Terminal</button>
+        ${p.startCommand ? `<button class="recovery-term" onclick="copyCmd(event,'${escapeHtml(p.startCommand)}')" title="Copy start command">📋</button>` : ''}
+      </div>
+      ${p.startCommand ? `<div class="recovery-cmd" onclick="copyCmd(event,'${escapeHtml(p.startCommand)}')" title="Click to copy">${cmdDisplay}</div>` : ''}
+    </div>` : '';
+
+  const cardClick = projectUrl ? `onclick="cardClick(event, '${escapeHtml(projectUrl)}')"` : '';
+
+  return `
+    <div class="card${hasConflict ? ' has-conflict' : ''}" data-id="${p.id}" data-framework="${p.framework}" data-status="${p.status}" ${cardClick} style="${projectUrl ? 'cursor:pointer' : ''}">
+      <div class="card-thumb">
+        <img src="${thumbSrc}" onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
+        <div class="placeholder" style="display:none">${getFrameworkIcon(p.framework)}</div>
+        <div class="status-dot ${p.status}"></div>
+        <div class="thumb-actions">
+          <button class="btn btn-sm btn-ghost" onclick="event.stopPropagation();refreshThumb('${p.id}')" title="Refresh screenshot">Snap</button>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="card-badges">
+          <span class="badge ${getFrameworkBadgeClass(p.framework)}">${p.framework}</span>
+          ${portBadges}
+          ${p.electronApp ? '<span class="badge badge-electron">Desktop</span>' : ''}
+          ${p.dockerCompose ? '<span class="badge badge-docker">Docker</span>' : ''}
+        </div>
+        <div class="card-name">${escapeHtml(p.name)}</div>
+        <div class="card-desc">${escapeHtml(stripMarkdown(p.description || ''))}</div>
+        <div class="card-path" title="${escapeHtml(p.path)}">${escapeHtml(p.path)}</div>
+      </div>
+      ${recoveryPanel}
+      <div class="dev-actions">
+        ${p.startCommand && p.status === 'stopped' ? `<button class="btn btn-sm btn-primary" onclick="event.stopPropagation();startProject(event,'${p.id}')">Start</button>` : ''}
+        ${p.status === 'running' ? `<button class="btn btn-sm btn-danger" onclick="event.stopPropagation();stopProject('${p.id}')">Stop</button>` : ''}
+        <button class="btn btn-sm btn-ghost" onclick="event.stopPropagation();openTerminal(event,'${p.id}')">Terminal</button>
+        <button class="btn btn-sm btn-ghost" onclick="event.stopPropagation();openMoveModal('${p.id}')">Move</button>
+        <button class="btn btn-sm btn-danger" onclick="event.stopPropagation();openDeleteModal('${p.id}')">Delete</button>
+      </div>
+    </div>`;
+}
+
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+function renderGrid() {
+  const grid = document.getElementById('grid');
+  let filtered = projects;
+
+  if (searchQuery) {
+    const q = searchQuery.toLowerCase();
+    filtered = filtered.filter(p =>
+      p.name.toLowerCase().includes(q) ||
+      p.framework.toLowerCase().includes(q) ||
+      p.path.toLowerCase().includes(q) ||
+      (p.description || '').toLowerCase().includes(q)
+    );
+  }
+
+  if (frameworkFilter) {
+    filtered = filtered.filter(p => p.framework.includes(frameworkFilter));
+  }
+
+  if (filtered.length === 0) {
+    grid.innerHTML = '<div class="empty-state">No projects match your search.</div>';
+    return;
+  }
+
+  // Sort: running first, then by name
+  filtered.sort((a, b) => {
+    if (a.status === 'running' && b.status !== 'running') return -1;
+    if (b.status === 'running' && a.status !== 'running') return 1;
+    return a.name.localeCompare(b.name);
+  });
+
+  grid.innerHTML = filtered.map(renderCard).join('');
+}
+
+function updateStats() {
+  document.getElementById('totalCount').textContent = projects.length;
+  document.getElementById('conflictCount').textContent = Object.keys(conflicts).length;
+  document.getElementById('runningCount').textContent = projects.filter(p => p.status === 'running').length;
+
+  const banner = document.getElementById('conflictBanner');
+  const details = document.getElementById('conflictDetails');
+  if (Object.keys(conflicts).length > 0) {
+    banner.classList.add('visible');
+    details.innerHTML = Object.entries(conflicts).map(([port, names]) =>
+      `<span class="conflict-port">:${port}</span> ${names.join(', ')}`
+    ).join(' &bull; ');
+  } else {
+    banner.classList.remove('visible');
+  }
+}
+
+function populateFrameworkFilter() {
+  const frameworks = [...new Set(projects.flatMap(p => {
+    return p.framework.split(' + ').map(f => f.trim());
+  }))].sort();
+  const select = document.getElementById('frameworkFilter');
+  select.innerHTML = '<option value="">All Frameworks</option>' +
+    frameworks.map(f => `<option value="${f}">${f}</option>`).join('');
+}
+
+async function fetchProjects() {
+  try {
+    const res = await fetch('/api/projects');
+    const data = await res.json();
+    projects = data.projects;
+    conflicts = data.conflicts;
+    updateStats();
+    populateFrameworkFilter();
+    renderGrid();
+    renderTaskManager();
+  } catch (err) {
+    document.getElementById('grid').innerHTML =
+      `<div class="empty-state">Failed to load projects: ${err.message}</div>`;
+  }
+}
+
+async function rescan() {
+  document.getElementById('grid').innerHTML =
+    '<div class="loading"><div class="spinner"></div>Re-scanning filesystem...</div>';
+  try {
+    const res = await fetch('/api/scan', { method: 'POST' });
+    const data = await res.json();
+    projects = data.projects;
+    conflicts = data.conflicts;
+    updateStats();
+    populateFrameworkFilter();
+    renderGrid();
+    renderTaskManager();
+    toast('Scan complete: ' + data.totalProjects + ' projects found', 'success');
+  } catch (err) {
+    toast('Scan failed: ' + err.message, 'error');
+  }
+}
+
+async function refreshThumb(id) {
+  try {
+    // Force regenerate via API then refresh the image
+    const res = await fetch(`/api/thumbnail/${id}?t=${Date.now()}`);
+    if (res.ok) {
+      const img = document.querySelector(`[data-id="${id}"] .card-thumb img`);
+      if (img) {
+        img.style.display = '';
+        img.src = `/thumbnails/${id}.png?t=${Date.now()}`;
+        const placeholder = img.nextElementSibling;
+        if (placeholder) placeholder.style.display = 'none';
+      }
+      toast('Screenshot captured', 'success');
+    }
+  } catch (err) { toast('Screenshot failed: ' + err.message, 'error'); }
+}
+
+async function generateThumbnails() {
+  const btn = document.getElementById('thumbBtn');
+  btn.textContent = 'Generating...';
+  btn.disabled = true;
+  toast('Generating thumbnails for all projects - this takes a minute...', 'info');
+
+  try {
+    await fetch('/api/thumbnails/generate', { method: 'POST' });
+    // Poll for completion
+    const pollId = setInterval(async () => {
+      const res = await fetch('/api/thumbnails/status');
+      const data = await res.json();
+      btn.textContent = `Snapping ${data.generated}/${data.total}`;
+      if (!data.generating) {
+        clearInterval(pollId);
+        btn.textContent = 'Snap All';
+        btn.disabled = false;
+        toast(`Generated ${data.generated} thumbnails`, 'success');
+        // Refresh all card images
+        for (const p of projects) {
+          const img = document.querySelector(`[data-id="${p.id}"] .card-thumb img`);
+          if (img) {
+            img.style.display = '';
+            img.src = `/thumbnails/${p.id}.png?t=${Date.now()}`;
+            const placeholder = img.nextElementSibling;
+            if (placeholder) placeholder.style.display = 'none';
+          }
+        }
+      }
+    }, 3000);
+  } catch (err) {
+    toast('Thumbnail generation failed: ' + err.message, 'error');
+    btn.textContent = 'Snap All';
+    btn.disabled = false;
+  }
+}
+
+function cardClick(event, url) {
+  // Don't navigate if user clicked a button or badge inside the card
+  if (event.target.closest('button, .badge, .thumb-actions, .dev-actions, .recovery-panel')) return;
+  window.open(url, '_blank');
+}
+
+function openProject(event, url) {
+  event.stopPropagation();
+  window.open(url, '_blank');
+}
+
+async function copyCmd(event, cmd) {
+  event.stopPropagation();
+  try {
+    await navigator.clipboard.writeText(cmd);
+    toast('Command copied to clipboard', 'success');
+  } catch {
+    // Fallback
+    const ta = document.createElement('textarea');
+    ta.value = cmd;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    ta.remove();
+    toast('Command copied', 'success');
+  }
+}
+
+async function startProject(event, id) {
+  if (event) event.stopPropagation();
+  try {
+    const res = await fetch(`/api/project/${id}/start`, { method: 'POST' });
+    const data = await res.json();
+    if (data.success) {
+      toast('▶ Starting — will open when ready...', 'success');
+      // Mark project so it auto-opens when it comes alive
+      const p = projects.find(x => x.id === id);
+      if (p) p._pendingOpen = true;
+      setTimeout(fetchProjects, 2000);
+    } else {
+      toast(data.error, 'error');
+    }
+  } catch (err) { toast(err.message, 'error'); }
+}
+
+async function stopProject(id) {
+  try {
+    const res = await fetch(`/api/project/${id}/stop`, { method: 'POST' });
+    const data = await res.json();
+    if (data.success) {
+      toast('Project stopped', 'success');
+      setTimeout(fetchProjects, 1000);
+    } else {
+      toast(data.error, 'error');
+    }
+  } catch (err) { toast(err.message, 'error'); }
+}
+
+// After start, poll until the port comes alive then open it
+async function waitAndOpen(id, url, maxWait = 15000) {
+  const start = Date.now();
+  const poll = async () => {
+    try {
+      await fetch(url, { mode: 'no-cors', cache: 'no-store' });
+      window.open(url, '_blank');
+    } catch {
+      if (Date.now() - start < maxWait) setTimeout(poll, 1000);
+    }
+  };
+  setTimeout(poll, 2000); // give it 2s head start
+}
+
+async function openTerminal(event, id) {
+  if (event) event.stopPropagation();
+  try {
+    await fetch(`/api/project/${id}/open-terminal`, { method: 'POST' });
+    toast('Terminal opened', 'success');
+  } catch (err) { toast(err.message, 'error'); }
+}
+
+let pendingDeleteId = null;
+function openDeleteModal(id) {
+  pendingDeleteId = id;
+  const p = projects.find(x => x.id === id);
+  document.getElementById('deleteModalPath').textContent = p ? p.path : '';
+  document.getElementById('deleteModal').classList.add('visible');
+}
+function closeDeleteModal() {
+  pendingDeleteId = null;
+  document.getElementById('deleteModal').classList.remove('visible');
+}
+document.getElementById('confirmDeleteBtn').onclick = async () => {
+  if (!pendingDeleteId) return;
+  try {
+    const res = await fetch(`/api/project/${pendingDeleteId}/delete`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ confirmed: true })
+    });
+    const data = await res.json();
+    if (data.success) {
+      toast('Project deleted', 'success');
+      closeDeleteModal();
+      fetchProjects();
+    } else {
+      toast(data.error, 'error');
+    }
+  } catch (err) { toast(err.message, 'error'); }
+};
+
+let pendingMoveId = null;
+function openMoveModal(id) {
+  pendingMoveId = id;
+  const p = projects.find(x => x.id === id);
+  document.getElementById('moveDestination').value = p ? p.path : '';
+  document.getElementById('moveModal').classList.add('visible');
+}
+function closeMoveModal() {
+  pendingMoveId = null;
+  document.getElementById('moveModal').classList.remove('visible');
+}
+document.getElementById('confirmMoveBtn').onclick = async () => {
+  if (!pendingMoveId) return;
+  const dest = document.getElementById('moveDestination').value.trim();
+  if (!dest) return toast('Enter a destination path', 'error');
+  try {
+    const res = await fetch(`/api/project/${pendingMoveId}/move`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ destination: dest })
+    });
+    const data = await res.json();
+    if (data.success) {
+      toast('Project moved', 'success');
+      closeMoveModal();
+      fetchProjects();
+    } else {
+      toast(data.error, 'error');
+    }
+  } catch (err) { toast(err.message, 'error'); }
+};
+
+function toggleDevMode(enabled) {
+  document.body.classList.toggle('dev-mode', enabled);
+  if (enabled) {
+    toast('Dev Mode enabled — be careful with destructive actions', 'error');
+  }
+}
+
+function toast(message, type = 'info') {
+  const container = document.getElementById('toasts');
+  const t = document.createElement('div');
+  t.className = `toast ${type}`;
+  t.textContent = message;
+  container.appendChild(t);
+  setTimeout(() => { t.remove(); }, 4000);
+}
+
+// Search handler
+document.getElementById('searchInput').addEventListener('input', (e) => {
+  searchQuery = e.target.value;
+  renderGrid();
+});
+
+// Framework filter
+document.getElementById('frameworkFilter').addEventListener('change', (e) => {
+  frameworkFilter = e.target.value;
+  renderGrid();
+});
+
+// Close modals on overlay click
+document.getElementById('deleteModal').addEventListener('click', (e) => {
+  if (e.target === e.currentTarget) closeDeleteModal();
+});
+document.getElementById('moveModal').addEventListener('click', (e) => {
+  if (e.target === e.currentTarget) closeMoveModal();
+});
+
+// Auto-refresh port status every 10 seconds
+setInterval(async () => {
+  try {
+    const res = await fetch('/api/ports');
+    const data = await res.json();
+    conflicts = data.conflicts;
+    for (const update of data.projects) {
+      const p = projects.find(x => x.id === update.id);
+      if (p) {
+        p.status = update.status;
+        p.pid = update.pid;
+        p.activePort = update.activePort;
+      }
+    }
+    updateStats();
+    // Update status dots and recovery panel visibility without full re-render
+    for (const update of data.projects) {
+      const card = document.querySelector(`[data-id="${update.id}"]`);
+      if (card) {
+        const dot = card.querySelector('.status-dot');
+        if (dot) dot.className = `status-dot ${update.status}`;
+        const wasStatus = card.dataset.status;
+        card.dataset.status = update.status;
+        // If just came online, auto-open the URL
+        if (wasStatus === 'stopped' && update.status === 'running') {
+          const p = projects.find(x => x.id === update.id);
+          if (p && p._pendingOpen) {
+            const url = getProjectUrl({ ...p, status: 'running', activePort: update.activePort });
+            if (url) window.open(url, '_blank');
+            p._pendingOpen = false;
+          }
+        }
+      }
+    }
+    renderTaskManager();
+  } catch {}
+}, 10000);
+
+// ── Task Manager ─────────────────────────────────────────────────────────────
+
+let tmCollapsed = localStorage.getItem('tm-collapsed') === '1';
+let resourceData = {};
+
+function toggleTM() {
+  tmCollapsed = !tmCollapsed;
+  localStorage.setItem('tm-collapsed', tmCollapsed ? '1' : '0');
+  document.getElementById('taskManager').classList.toggle('collapsed', tmCollapsed);
+  document.getElementById('tmToggle').title = tmCollapsed ? 'Expand task manager' : 'Collapse task manager';
+}
+if (tmCollapsed) {
+  document.getElementById('taskManager').classList.add('collapsed');
+  document.getElementById('tmToggle').textContent = '▲';
+}
+
+function renderTaskManager() {
+  const running = projects.filter(p => p.status === 'running');
+  const stopped = projects.filter(p => p.status === 'stopped');
+  const conflictCount = Object.keys(conflicts).length;
+
+  // Summary pills
+  document.getElementById('tmRunning').textContent   = running.length + ' Live';
+  document.getElementById('tmStopped').textContent   = stopped.length + ' Stopped';
+  const conflictPill = document.getElementById('tmConflicts');
+  conflictPill.textContent = conflictCount === 0 ? '✓ Clean' : conflictCount + ' Conflicts';
+  conflictPill.className   = 'tm-pill ' + (conflictCount === 0 ? 'tm-conflict none' : 'tm-conflict');
+
+  // Fix button state
+  const fixBtn = document.getElementById('fixBtn');
+  if (conflictCount === 0) {
+    fixBtn.textContent = '✓ No Conflicts';
+    fixBtn.className = 'tm-btn tm-btn-fix clean';
+    fixBtn.onclick = null;
+  } else {
+    fixBtn.textContent = '⚡ Fix ' + conflictCount + ' Conflicts';
+    fixBtn.className = 'tm-btn tm-btn-fix';
+    fixBtn.onclick = fixConflicts;
+  }
+
+  // Running process rows
+  const list = document.getElementById('tmRunningList');
+  if (running.length === 0) {
+    list.innerHTML = '<div class="tm-empty-running">No projects running — use ▶ Start or click a card\'s Start button</div>';
+  } else {
+    list.innerHTML = running.map(p => {
+      const url = getProjectUrl(p);
+      const res = resourceData[p.id];
+      const memMB  = res ? res.memMB  : null;
+      const cpuPct = res ? res.cpuPct : null;
+      const barPct = memMB ? Math.min(100, Math.round(memMB / 5)) : 0; // scale 0–500MB → 0–100%
+      const barClass = cpuPct > 60 ? 'critical' : cpuPct > 30 ? 'hot' : '';
+      const resText = memMB != null ? memMB + 'MB' + (cpuPct != null ? ' · ' + cpuPct + '%' : '') : 'live';
+      return `<div class="tm-proc" data-id="${p.id}">
+        <div class="tm-proc-dot"></div>
+        <div class="tm-proc-name" title="${escapeHtml(p.path)}">${escapeHtml(p.name)}</div>
+        <div class="tm-proc-port">${p.activePort ? ':'+p.activePort : p.ports[0] ? ':'+p.ports[0] : ''}</div>
+        <div class="tm-proc-res">${resText}</div>
+        <div class="tm-proc-bar"><div class="tm-proc-bar-fill ${barClass}" style="width:${barPct}%"></div></div>
+        ${url ? `<button class="tm-proc-open" onclick="window.open('${escapeHtml(url)}','_blank')" title="Open">↗</button>` : ''}
+        <button class="tm-proc-stop" onclick="stopProject('${p.id}')" title="Stop">■</button>
+      </div>`;
+    }).join('');
+  }
+
+  // Conflict list
+  const conflictList = document.getElementById('tmConflictList');
+  if (conflictCount > 0) {
+    conflictList.style.display = '';
+    conflictList.innerHTML = `<div class="tm-conflict-title">⚠ Port Conflicts — click ⚡ Fix to auto-patch config files</div>` +
+      Object.entries(conflicts).map(([port, names]) =>
+        `<div class="tm-conflict-item">
+          <span class="tm-conflict-port">:${port}</span>
+          <span class="tm-conflict-names">${names.join(', ')}</span>
+        </div>`
+      ).join('');
+  } else {
+    conflictList.style.display = 'none';
+  }
+}
+
+async function fetchResources() {
+  try {
+    const res = await fetch('/api/resources');
+    resourceData = await res.json();
+  } catch {}
+}
+
+async function fixConflicts() {
+  const btn = document.getElementById('fixBtn');
+  btn.textContent = '⚡ Patching...';
+  btn.style.opacity = '0.6';
+  try {
+    const res = await fetch('/api/conflicts/resolve', { method: 'POST' });
+    const data = await res.json();
+    const cl = document.getElementById('tmConflictList');
+    if (data.changes && data.changes.length > 0) {
+      const summary = data.changes.map(c =>
+        `${c.project} :${c.oldPort}→:${c.newPort} (${c.file})`
+      ).join('<br>');
+      if (cl) {
+        cl.innerHTML += `<div class="tm-resolve-result">✓ ${data.changes.length} fixed:<br>${summary}</div>`;
+      }
+      toast(`✓ Fixed ${data.changes.length} conflicts — restart projects to apply new ports`, 'success');
+    } else {
+      toast('No patchable conflicts found', 'info');
+    }
+    if (data.remaining === 0) {
+      conflicts = {};
+    }
+    // Re-fetch to get updated port data
+    setTimeout(fetchProjects, 800);
+  } catch (err) {
+    toast('Conflict fix failed: ' + err.message, 'error');
+  } finally {
+    btn.style.opacity = '';
+  }
+}
+
+async function startAll() {
+  const btn = document.querySelector('.tm-btn-start');
+  btn.textContent = '▶ Starting...';
+  btn.disabled = true;
+  try {
+    const res = await fetch('/api/projects/start-all', { method: 'POST' });
+    const data = await res.json();
+    toast(`▶ Started ${data.started.length} projects`, 'success');
+    setTimeout(fetchProjects, 3000);
+  } catch (err) {
+    toast('Start all failed: ' + err.message, 'error');
+  } finally {
+    btn.textContent = '▶ Start All';
+    btn.disabled = false;
+  }
+}
+
+// ── Initial load ─────────────────────────────────────────────────────────────
+loadVersion();
+fetchProjects(); // fetchProjects always calls renderTaskManager() on completion
+
+// Poll resources every 5s — keeps CPU/RAM bars live in task manager
+setInterval(async () => {
+  await fetchResources();
+  renderTaskManager();
+}, 5000);
+
+</script>
+</body>
+</html>
