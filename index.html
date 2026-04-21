@@ -183,11 +183,28 @@
   .recovery-open, .recovery-start, .recovery-term {
     padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 600;
     border: 1px solid; transition: all 0.2s; white-space: nowrap;
+    text-decoration: none; display: inline-flex; align-items: center; justify-content: center;
+    font-family: inherit; cursor: pointer;
   }
+  a.recovery-open, a.recovery-start { text-decoration: none; }
   .recovery-open  { border-color: var(--accent); background: var(--accent-glow); color: var(--accent); flex: 1; text-align: center; }
+  .recovery-open:hover { background: var(--accent); color: #fff; }
   .recovery-start { border-color: var(--success); background: var(--success-dim); color: var(--success); }
+  .recovery-start:hover { background: var(--success); color: #000; }
   .recovery-term  { border-color: var(--border); background: transparent; color: var(--text-secondary); }
+  .recovery-term:hover { background: var(--bg-card-hover); color: var(--text-primary); }
   .recovery-panel button[disabled] { opacity: 0.4; cursor: not-allowed; }
+  .recovery-panel button[disabled]:hover { background: transparent; color: var(--text-secondary); }
+
+  .toast {
+    position: fixed; bottom: 24px; right: 24px; z-index: 300;
+    padding: 12px 20px; border-radius: 8px; font-size: 13px;
+    background: var(--bg-card); border: 1px solid rgba(34,197,94,0.3);
+    color: var(--text-primary); box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+    opacity: 0; transform: translateY(12px); transition: opacity 0.2s, transform 0.2s;
+    pointer-events: none;
+  }
+  .toast.visible { opacity: 1; transform: translateY(0); }
 
   /* Empty state */
   .empty-state {
@@ -251,6 +268,7 @@
   <div class="stat"><span class="stat-value">55</span> Projects</div>
   <div class="stat"><span class="stat-value">17</span> Frameworks</div>
   <div class="stat"><span class="stat-value mirrored">55</span> With Thumbnails</div>
+  <div class="stat"><span class="stat-value" style="color:var(--success)">51</span> On GitHub</div>
 </div>
 
 <main id="grid">
@@ -272,9 +290,9 @@
       </div>
       <div class="recovery-panel">
         <div class="recovery-btns">
-          <button class="recovery-open" disabled title="Mirror only — visit the local dashboard to open">↗ Open :3001</button>
-          <button class="recovery-start" disabled title="Mirror only — visit the local dashboard to start">▶ Start</button>
-          <button class="recovery-term" disabled title="Mirror only">⬜ Terminal</button>
+          <a class="recovery-open" href="https://github.com/lozturner/laurence-lenz" target="_blank" rel="noopener" title="Open source on GitHub">🐙 View Source</a>
+               <a class="recovery-start" href="https://github.com/lozturner/laurence-lenz/archive/refs/heads/main.zip" title="Download ZIP of main branch">⬇ ZIP</a>
+               <button class="recovery-term" onclick="copyClone('https://github.com/lozturner/laurence-lenz.git', event)" title="Copy git clone command">📋 Clone</button>
         </div>
       </div>
     </article>
@@ -296,9 +314,9 @@
       </div>
       <div class="recovery-panel">
         <div class="recovery-btns">
-          <button class="recovery-open" disabled title="Mirror only — visit the local dashboard to open">↗ Open :3004</button>
-          <button class="recovery-start" disabled title="Mirror only — visit the local dashboard to start">▶ Start</button>
-          <button class="recovery-term" disabled title="Mirror only">⬜ Terminal</button>
+          <a class="recovery-open" href="https://github.com/lozturner/ai-whack" target="_blank" rel="noopener" title="Open source on GitHub">🐙 View Source</a>
+               <a class="recovery-start" href="https://github.com/lozturner/ai-whack/archive/refs/heads/main.zip" title="Download ZIP of main branch">⬇ ZIP</a>
+               <button class="recovery-term" onclick="copyClone('https://github.com/lozturner/ai-whack.git', event)" title="Copy git clone command">📋 Clone</button>
         </div>
       </div>
     </article>
@@ -320,9 +338,8 @@
       </div>
       <div class="recovery-panel">
         <div class="recovery-btns">
-          <button class="recovery-open" disabled title="Mirror only — visit the local dashboard to open">↗ Open</button>
-          <button class="recovery-start" disabled title="Mirror only — visit the local dashboard to start">▶ Start</button>
-          <button class="recovery-term" disabled title="Mirror only">⬜ Terminal</button>
+          <button class="recovery-open" disabled title="Not yet uploaded to GitHub — lives locally only">⊘ Not on GitHub</button>
+               <button class="recovery-term" disabled title="Mirror only">⬜ Terminal</button>
         </div>
       </div>
     </article>
@@ -344,9 +361,9 @@
       </div>
       <div class="recovery-panel">
         <div class="recovery-btns">
-          <button class="recovery-open" disabled title="Mirror only — visit the local dashboard to open">↗ Open</button>
-          <button class="recovery-start" disabled title="Mirror only — visit the local dashboard to start">▶ Start</button>
-          <button class="recovery-term" disabled title="Mirror only">⬜ Terminal</button>
+          <a class="recovery-open" href="https://github.com/lozturner/binman" target="_blank" rel="noopener" title="Open source on GitHub">🐙 View Source</a>
+               <a class="recovery-start" href="https://github.com/lozturner/binman/archive/refs/heads/main.zip" title="Download ZIP of main branch">⬇ ZIP</a>
+               <button class="recovery-term" onclick="copyClone('https://github.com/lozturner/binman.git', event)" title="Copy git clone command">📋 Clone</button>
         </div>
       </div>
     </article>
@@ -368,9 +385,9 @@
       </div>
       <div class="recovery-panel">
         <div class="recovery-btns">
-          <button class="recovery-open" disabled title="Mirror only — visit the local dashboard to open">↗ Open :5174</button>
-          <button class="recovery-start" disabled title="Mirror only — visit the local dashboard to start">▶ Start</button>
-          <button class="recovery-term" disabled title="Mirror only">⬜ Terminal</button>
+          <a class="recovery-open" href="https://github.com/lozturner/brain-sim" target="_blank" rel="noopener" title="Open source on GitHub">🐙 View Source</a>
+               <a class="recovery-start" href="https://github.com/lozturner/brain-sim/archive/refs/heads/main.zip" title="Download ZIP of main branch">⬇ ZIP</a>
+               <button class="recovery-term" onclick="copyClone('https://github.com/lozturner/brain-sim.git', event)" title="Copy git clone command">📋 Clone</button>
         </div>
       </div>
     </article>
@@ -392,9 +409,9 @@
       </div>
       <div class="recovery-panel">
         <div class="recovery-btns">
-          <button class="recovery-open" disabled title="Mirror only — visit the local dashboard to open">↗ Open :8771</button>
-          <button class="recovery-start" disabled title="Mirror only — visit the local dashboard to start">▶ Start</button>
-          <button class="recovery-term" disabled title="Mirror only">⬜ Terminal</button>
+          <a class="recovery-open" href="https://github.com/lozturner/laurence-bring" target="_blank" rel="noopener" title="Open source on GitHub">🐙 View Source</a>
+               <a class="recovery-start" href="https://github.com/lozturner/laurence-bring/archive/refs/heads/main.zip" title="Download ZIP of main branch">⬇ ZIP</a>
+               <button class="recovery-term" onclick="copyClone('https://github.com/lozturner/laurence-bring.git', event)" title="Copy git clone command">📋 Clone</button>
         </div>
       </div>
     </article>
@@ -416,9 +433,9 @@
       </div>
       <div class="recovery-panel">
         <div class="recovery-btns">
-          <button class="recovery-open" disabled title="Mirror only — visit the local dashboard to open">↗ Open :8772</button>
-          <button class="recovery-start" disabled title="Mirror only — visit the local dashboard to start">▶ Start</button>
-          <button class="recovery-term" disabled title="Mirror only">⬜ Terminal</button>
+          <a class="recovery-open" href="https://github.com/lozturner/laurence-bring" target="_blank" rel="noopener" title="Open source on GitHub">🐙 View Source</a>
+               <a class="recovery-start" href="https://github.com/lozturner/laurence-bring/archive/refs/heads/main.zip" title="Download ZIP of main branch">⬇ ZIP</a>
+               <button class="recovery-term" onclick="copyClone('https://github.com/lozturner/laurence-bring.git', event)" title="Copy git clone command">📋 Clone</button>
         </div>
       </div>
     </article>
@@ -440,9 +457,9 @@
       </div>
       <div class="recovery-panel">
         <div class="recovery-btns">
-          <button class="recovery-open" disabled title="Mirror only — visit the local dashboard to open">↗ Open</button>
-          <button class="recovery-start" disabled title="Mirror only — visit the local dashboard to start">▶ Start</button>
-          <button class="recovery-term" disabled title="Mirror only">⬜ Terminal</button>
+          <a class="recovery-open" href="https://github.com/lozturner/claude-home-hub" target="_blank" rel="noopener" title="Open source on GitHub">🐙 View Source</a>
+               <a class="recovery-start" href="https://github.com/lozturner/claude-home-hub/archive/refs/heads/main.zip" title="Download ZIP of main branch">⬇ ZIP</a>
+               <button class="recovery-term" onclick="copyClone('https://github.com/lozturner/claude-home-hub.git', event)" title="Copy git clone command">📋 Clone</button>
         </div>
       </div>
     </article>
@@ -464,9 +481,9 @@
       </div>
       <div class="recovery-panel">
         <div class="recovery-btns">
-          <button class="recovery-open" disabled title="Mirror only — visit the local dashboard to open">↗ Open</button>
-          <button class="recovery-start" disabled title="Mirror only — visit the local dashboard to start">▶ Start</button>
-          <button class="recovery-term" disabled title="Mirror only">⬜ Terminal</button>
+          <a class="recovery-open" href="https://github.com/lozturner/claude-v1" target="_blank" rel="noopener" title="Open source on GitHub">🐙 View Source</a>
+               <a class="recovery-start" href="https://github.com/lozturner/claude-v1/archive/refs/heads/main.zip" title="Download ZIP of main branch">⬇ ZIP</a>
+               <button class="recovery-term" onclick="copyClone('https://github.com/lozturner/claude-v1.git', event)" title="Copy git clone command">📋 Clone</button>
         </div>
       </div>
     </article>
@@ -488,9 +505,9 @@
       </div>
       <div class="recovery-panel">
         <div class="recovery-btns">
-          <button class="recovery-open" disabled title="Mirror only — visit the local dashboard to open">↗ Open :8770</button>
-          <button class="recovery-start" disabled title="Mirror only — visit the local dashboard to start">▶ Start</button>
-          <button class="recovery-term" disabled title="Mirror only">⬜ Terminal</button>
+          <a class="recovery-open" href="https://github.com/lozturner/laurence-bring" target="_blank" rel="noopener" title="Open source on GitHub">🐙 View Source</a>
+               <a class="recovery-start" href="https://github.com/lozturner/laurence-bring/archive/refs/heads/main.zip" title="Download ZIP of main branch">⬇ ZIP</a>
+               <button class="recovery-term" onclick="copyClone('https://github.com/lozturner/laurence-bring.git', event)" title="Copy git clone command">📋 Clone</button>
         </div>
       </div>
     </article>
@@ -512,9 +529,9 @@
       </div>
       <div class="recovery-panel">
         <div class="recovery-btns">
-          <button class="recovery-open" disabled title="Mirror only — visit the local dashboard to open">↗ Open</button>
-          <button class="recovery-start" disabled title="Mirror only — visit the local dashboard to start">▶ Start</button>
-          <button class="recovery-term" disabled title="Mirror only">⬜ Terminal</button>
+          <a class="recovery-open" href="https://github.com/lozturner/donner-pad" target="_blank" rel="noopener" title="Open source on GitHub">🐙 View Source</a>
+               <a class="recovery-start" href="https://github.com/lozturner/donner-pad/archive/refs/heads/main.zip" title="Download ZIP of main branch">⬇ ZIP</a>
+               <button class="recovery-term" onclick="copyClone('https://github.com/lozturner/donner-pad.git', event)" title="Copy git clone command">📋 Clone</button>
         </div>
       </div>
     </article>
@@ -536,9 +553,9 @@
       </div>
       <div class="recovery-panel">
         <div class="recovery-btns">
-          <button class="recovery-open" disabled title="Mirror only — visit the local dashboard to open">↗ Open :8768</button>
-          <button class="recovery-start" disabled title="Mirror only — visit the local dashboard to start">▶ Start</button>
-          <button class="recovery-term" disabled title="Mirror only">⬜ Terminal</button>
+          <a class="recovery-open" href="https://github.com/lozturner/laurence-bring" target="_blank" rel="noopener" title="Open source on GitHub">🐙 View Source</a>
+               <a class="recovery-start" href="https://github.com/lozturner/laurence-bring/archive/refs/heads/main.zip" title="Download ZIP of main branch">⬇ ZIP</a>
+               <button class="recovery-term" onclick="copyClone('https://github.com/lozturner/laurence-bring.git', event)" title="Copy git clone command">📋 Clone</button>
         </div>
       </div>
     </article>
@@ -560,9 +577,9 @@
       </div>
       <div class="recovery-panel">
         <div class="recovery-btns">
-          <button class="recovery-open" disabled title="Mirror only — visit the local dashboard to open">↗ Open</button>
-          <button class="recovery-start" disabled title="Mirror only — visit the local dashboard to start">▶ Start</button>
-          <button class="recovery-term" disabled title="Mirror only">⬜ Terminal</button>
+          <a class="recovery-open" href="https://github.com/onuratakan/gpt-computer-assistant" target="_blank" rel="noopener" title="Open source on GitHub">🐙 View Source</a>
+               <a class="recovery-start" href="https://github.com/onuratakan/gpt-computer-assistant/archive/refs/heads/main.zip" title="Download ZIP of main branch">⬇ ZIP</a>
+               <button class="recovery-term" onclick="copyClone('https://github.com/onuratakan/gpt-computer-assistant.git', event)" title="Copy git clone command">📋 Clone</button>
         </div>
       </div>
     </article>
@@ -584,9 +601,9 @@
       </div>
       <div class="recovery-panel">
         <div class="recovery-btns">
-          <button class="recovery-open" disabled title="Mirror only — visit the local dashboard to open">↗ Open :3008</button>
-          <button class="recovery-start" disabled title="Mirror only — visit the local dashboard to start">▶ Start</button>
-          <button class="recovery-term" disabled title="Mirror only">⬜ Terminal</button>
+          <a class="recovery-open" href="https://github.com/lozturner/html-editor" target="_blank" rel="noopener" title="Open source on GitHub">🐙 View Source</a>
+               <a class="recovery-start" href="https://github.com/lozturner/html-editor/archive/refs/heads/main.zip" title="Download ZIP of main branch">⬇ ZIP</a>
+               <button class="recovery-term" onclick="copyClone('https://github.com/lozturner/html-editor.git', event)" title="Copy git clone command">📋 Clone</button>
         </div>
       </div>
     </article>
@@ -608,9 +625,9 @@
       </div>
       <div class="recovery-panel">
         <div class="recovery-btns">
-          <button class="recovery-open" disabled title="Mirror only — visit the local dashboard to open">↗ Open :8774</button>
-          <button class="recovery-start" disabled title="Mirror only — visit the local dashboard to start">▶ Start</button>
-          <button class="recovery-term" disabled title="Mirror only">⬜ Terminal</button>
+          <a class="recovery-open" href="https://github.com/lozturner/laurence-bring" target="_blank" rel="noopener" title="Open source on GitHub">🐙 View Source</a>
+               <a class="recovery-start" href="https://github.com/lozturner/laurence-bring/archive/refs/heads/main.zip" title="Download ZIP of main branch">⬇ ZIP</a>
+               <button class="recovery-term" onclick="copyClone('https://github.com/lozturner/laurence-bring.git', event)" title="Copy git clone command">📋 Clone</button>
         </div>
       </div>
     </article>
@@ -632,9 +649,9 @@
       </div>
       <div class="recovery-panel">
         <div class="recovery-btns">
-          <button class="recovery-open" disabled title="Mirror only — visit the local dashboard to open">↗ Open :3002</button>
-          <button class="recovery-start" disabled title="Mirror only — visit the local dashboard to start">▶ Start</button>
-          <button class="recovery-term" disabled title="Mirror only">⬜ Terminal</button>
+          <a class="recovery-open" href="https://github.com/lozturner/laurence-lenz" target="_blank" rel="noopener" title="Open source on GitHub">🐙 View Source</a>
+               <a class="recovery-start" href="https://github.com/lozturner/laurence-lenz/archive/refs/heads/main.zip" title="Download ZIP of main branch">⬇ ZIP</a>
+               <button class="recovery-term" onclick="copyClone('https://github.com/lozturner/laurence-lenz.git', event)" title="Copy git clone command">📋 Clone</button>
         </div>
       </div>
     </article>
@@ -656,9 +673,9 @@
       </div>
       <div class="recovery-panel">
         <div class="recovery-btns">
-          <button class="recovery-open" disabled title="Mirror only — visit the local dashboard to open">↗ Open :3003</button>
-          <button class="recovery-start" disabled title="Mirror only — visit the local dashboard to start">▶ Start</button>
-          <button class="recovery-term" disabled title="Mirror only">⬜ Terminal</button>
+          <a class="recovery-open" href="https://github.com/lozturner/mere-mortal" target="_blank" rel="noopener" title="Open source on GitHub">🐙 View Source</a>
+               <a class="recovery-start" href="https://github.com/lozturner/mere-mortal/archive/refs/heads/main.zip" title="Download ZIP of main branch">⬇ ZIP</a>
+               <button class="recovery-term" onclick="copyClone('https://github.com/lozturner/mere-mortal.git', event)" title="Copy git clone command">📋 Clone</button>
         </div>
       </div>
     </article>
@@ -680,9 +697,9 @@
       </div>
       <div class="recovery-panel">
         <div class="recovery-btns">
-          <button class="recovery-open" disabled title="Mirror only — visit the local dashboard to open">↗ Open :3000</button>
-          <button class="recovery-start" disabled title="Mirror only — visit the local dashboard to start">▶ Start</button>
-          <button class="recovery-term" disabled title="Mirror only">⬜ Terminal</button>
+          <a class="recovery-open" href="https://github.com/lozturner/laurence-lenz" target="_blank" rel="noopener" title="Open source on GitHub">🐙 View Source</a>
+               <a class="recovery-start" href="https://github.com/lozturner/laurence-lenz/archive/refs/heads/main.zip" title="Download ZIP of main branch">⬇ ZIP</a>
+               <button class="recovery-term" onclick="copyClone('https://github.com/lozturner/laurence-lenz.git', event)" title="Copy git clone command">📋 Clone</button>
         </div>
       </div>
     </article>
@@ -704,9 +721,9 @@
       </div>
       <div class="recovery-panel">
         <div class="recovery-btns">
-          <button class="recovery-open" disabled title="Mirror only — visit the local dashboard to open">↗ Open :3005</button>
-          <button class="recovery-start" disabled title="Mirror only — visit the local dashboard to start">▶ Start</button>
-          <button class="recovery-term" disabled title="Mirror only">⬜ Terminal</button>
+          <a class="recovery-open" href="https://github.com/lozturner/laurence-lens" target="_blank" rel="noopener" title="Open source on GitHub">🐙 View Source</a>
+               <a class="recovery-start" href="https://github.com/lozturner/laurence-lens/archive/refs/heads/main.zip" title="Download ZIP of main branch">⬇ ZIP</a>
+               <button class="recovery-term" onclick="copyClone('https://github.com/lozturner/laurence-lens.git', event)" title="Copy git clone command">📋 Clone</button>
         </div>
       </div>
     </article>
@@ -728,9 +745,9 @@
       </div>
       <div class="recovery-panel">
         <div class="recovery-btns">
-          <button class="recovery-open" disabled title="Mirror only — visit the local dashboard to open">↗ Open</button>
-          <button class="recovery-start" disabled title="Mirror only — visit the local dashboard to start">▶ Start</button>
-          <button class="recovery-term" disabled title="Mirror only">⬜ Terminal</button>
+          <a class="recovery-open" href="https://github.com/lozturner/laurence-voice-control" target="_blank" rel="noopener" title="Open source on GitHub">🐙 View Source</a>
+               <a class="recovery-start" href="https://github.com/lozturner/laurence-voice-control/archive/refs/heads/main.zip" title="Download ZIP of main branch">⬇ ZIP</a>
+               <button class="recovery-term" onclick="copyClone('https://github.com/lozturner/laurence-voice-control.git', event)" title="Copy git clone command">📋 Clone</button>
         </div>
       </div>
     </article>
@@ -752,9 +769,9 @@
       </div>
       <div class="recovery-panel">
         <div class="recovery-btns">
-          <button class="recovery-open" disabled title="Mirror only — visit the local dashboard to open">↗ Open :3998</button>
-          <button class="recovery-start" disabled title="Mirror only — visit the local dashboard to start">▶ Start</button>
-          <button class="recovery-term" disabled title="Mirror only">⬜ Terminal</button>
+          <a class="recovery-open" href="https://github.com/lozturner/laurence-watchers" target="_blank" rel="noopener" title="Open source on GitHub">🐙 View Source</a>
+               <a class="recovery-start" href="https://github.com/lozturner/laurence-watchers/archive/refs/heads/main.zip" title="Download ZIP of main branch">⬇ ZIP</a>
+               <button class="recovery-term" onclick="copyClone('https://github.com/lozturner/laurence-watchers.git', event)" title="Copy git clone command">📋 Clone</button>
         </div>
       </div>
     </article>
@@ -776,9 +793,8 @@
       </div>
       <div class="recovery-panel">
         <div class="recovery-btns">
-          <button class="recovery-open" disabled title="Mirror only — visit the local dashboard to open">↗ Open :8765</button>
-          <button class="recovery-start" disabled title="Mirror only — visit the local dashboard to start">▶ Start</button>
-          <button class="recovery-term" disabled title="Mirror only">⬜ Terminal</button>
+          <button class="recovery-open" disabled title="Not yet uploaded to GitHub — lives locally only">⊘ Not on GitHub</button>
+               <button class="recovery-term" disabled title="Mirror only">⬜ Terminal</button>
         </div>
       </div>
     </article>
@@ -800,9 +816,9 @@
       </div>
       <div class="recovery-panel">
         <div class="recovery-btns">
-          <button class="recovery-open" disabled title="Mirror only — visit the local dashboard to open">↗ Open :8080</button>
-          <button class="recovery-start" disabled title="Mirror only — visit the local dashboard to start">▶ Start</button>
-          <button class="recovery-term" disabled title="Mirror only">⬜ Terminal</button>
+          <a class="recovery-open" href="https://github.com/lozturner/beatyourselfup" target="_blank" rel="noopener" title="Open source on GitHub">🐙 View Source</a>
+               <a class="recovery-start" href="https://github.com/lozturner/beatyourselfup/archive/refs/heads/main.zip" title="Download ZIP of main branch">⬇ ZIP</a>
+               <button class="recovery-term" onclick="copyClone('https://github.com/lozturner/beatyourselfup.git', event)" title="Copy git clone command">📋 Clone</button>
         </div>
       </div>
     </article>
@@ -824,9 +840,9 @@
       </div>
       <div class="recovery-panel">
         <div class="recovery-btns">
-          <button class="recovery-open" disabled title="Mirror only — visit the local dashboard to open">↗ Open :8001</button>
-          <button class="recovery-start" disabled title="Mirror only — visit the local dashboard to start">▶ Start</button>
-          <button class="recovery-term" disabled title="Mirror only">⬜ Terminal</button>
+          <a class="recovery-open" href="https://github.com/trypromptly/LLMStack" target="_blank" rel="noopener" title="Open source on GitHub">🐙 View Source</a>
+               <a class="recovery-start" href="https://github.com/trypromptly/LLMStack/archive/refs/heads/main.zip" title="Download ZIP of main branch">⬇ ZIP</a>
+               <button class="recovery-term" onclick="copyClone('https://github.com/trypromptly/LLMStack.git', event)" title="Copy git clone command">📋 Clone</button>
         </div>
       </div>
     </article>
@@ -848,9 +864,9 @@
       </div>
       <div class="recovery-panel">
         <div class="recovery-btns">
-          <button class="recovery-open" disabled title="Mirror only — visit the local dashboard to open">↗ Open :4000</button>
-          <button class="recovery-start" disabled title="Mirror only — visit the local dashboard to start">▶ Start</button>
-          <button class="recovery-term" disabled title="Mirror only">⬜ Terminal</button>
+          <a class="recovery-open" href="https://github.com/lozturner/localhost-phonebook" target="_blank" rel="noopener" title="Open source on GitHub">🐙 View Source</a>
+               <a class="recovery-start" href="https://github.com/lozturner/localhost-phonebook/archive/refs/heads/main.zip" title="Download ZIP of main branch">⬇ ZIP</a>
+               <button class="recovery-term" onclick="copyClone('https://github.com/lozturner/localhost-phonebook.git', event)" title="Copy git clone command">📋 Clone</button>
         </div>
       </div>
     </article>
@@ -872,9 +888,9 @@
       </div>
       <div class="recovery-panel">
         <div class="recovery-btns">
-          <button class="recovery-open" disabled title="Mirror only — visit the local dashboard to open">↗ Open :5000</button>
-          <button class="recovery-start" disabled title="Mirror only — visit the local dashboard to start">▶ Start</button>
-          <button class="recovery-term" disabled title="Mirror only">⬜ Terminal</button>
+          <a class="recovery-open" href="https://github.com/lozturner/laurence-wispr" target="_blank" rel="noopener" title="Open source on GitHub">🐙 View Source</a>
+               <a class="recovery-start" href="https://github.com/lozturner/laurence-wispr/archive/refs/heads/main.zip" title="Download ZIP of main branch">⬇ ZIP</a>
+               <button class="recovery-term" onclick="copyClone('https://github.com/lozturner/laurence-wispr.git', event)" title="Copy git clone command">📋 Clone</button>
         </div>
       </div>
     </article>
@@ -896,9 +912,9 @@
       </div>
       <div class="recovery-panel">
         <div class="recovery-btns">
-          <button class="recovery-open" disabled title="Mirror only — visit the local dashboard to open">↗ Open</button>
-          <button class="recovery-start" disabled title="Mirror only — visit the local dashboard to start">▶ Start</button>
-          <button class="recovery-term" disabled title="Mirror only">⬜ Terminal</button>
+          <a class="recovery-open" href="https://github.com/lozturner/movie-magic" target="_blank" rel="noopener" title="Open source on GitHub">🐙 View Source</a>
+               <a class="recovery-start" href="https://github.com/lozturner/movie-magic/archive/refs/heads/main.zip" title="Download ZIP of main branch">⬇ ZIP</a>
+               <button class="recovery-term" onclick="copyClone('https://github.com/lozturner/movie-magic.git', event)" title="Copy git clone command">📋 Clone</button>
         </div>
       </div>
     </article>
@@ -920,9 +936,9 @@
       </div>
       <div class="recovery-panel">
         <div class="recovery-btns">
-          <button class="recovery-open" disabled title="Mirror only — visit the local dashboard to open">↗ Open :3006</button>
-          <button class="recovery-start" disabled title="Mirror only — visit the local dashboard to start">▶ Start</button>
-          <button class="recovery-term" disabled title="Mirror only">⬜ Terminal</button>
+          <a class="recovery-open" href="https://github.com/lozturner/my-react-app" target="_blank" rel="noopener" title="Open source on GitHub">🐙 View Source</a>
+               <a class="recovery-start" href="https://github.com/lozturner/my-react-app/archive/refs/heads/main.zip" title="Download ZIP of main branch">⬇ ZIP</a>
+               <button class="recovery-term" onclick="copyClone('https://github.com/lozturner/my-react-app.git', event)" title="Copy git clone command">📋 Clone</button>
         </div>
       </div>
     </article>
@@ -944,9 +960,9 @@
       </div>
       <div class="recovery-panel">
         <div class="recovery-btns">
-          <button class="recovery-open" disabled title="Mirror only — visit the local dashboard to open">↗ Open</button>
-          <button class="recovery-start" disabled title="Mirror only — visit the local dashboard to start">▶ Start</button>
-          <button class="recovery-term" disabled title="Mirror only">⬜ Terminal</button>
+          <a class="recovery-open" href="https://github.com/lozturner/lawrence-move-in" target="_blank" rel="noopener" title="Open source on GitHub">🐙 View Source</a>
+               <a class="recovery-start" href="https://github.com/lozturner/lawrence-move-in/archive/refs/heads/main.zip" title="Download ZIP of main branch">⬇ ZIP</a>
+               <button class="recovery-term" onclick="copyClone('https://github.com/lozturner/lawrence-move-in.git', event)" title="Copy git clone command">📋 Clone</button>
         </div>
       </div>
     </article>
@@ -968,9 +984,9 @@
       </div>
       <div class="recovery-panel">
         <div class="recovery-btns">
-          <button class="recovery-open" disabled title="Mirror only — visit the local dashboard to open">↗ Open :8081</button>
-          <button class="recovery-start" disabled title="Mirror only — visit the local dashboard to start">▶ Start</button>
-          <button class="recovery-term" disabled title="Mirror only">⬜ Terminal</button>
+          <a class="recovery-open" href="https://github.com/lozturner/laurence-maia" target="_blank" rel="noopener" title="Open source on GitHub">🐙 View Source</a>
+               <a class="recovery-start" href="https://github.com/lozturner/laurence-maia/archive/refs/heads/main.zip" title="Download ZIP of main branch">⬇ ZIP</a>
+               <button class="recovery-term" onclick="copyClone('https://github.com/lozturner/laurence-maia.git', event)" title="Copy git clone command">📋 Clone</button>
         </div>
       </div>
     </article>
@@ -992,9 +1008,8 @@
       </div>
       <div class="recovery-panel">
         <div class="recovery-btns">
-          <button class="recovery-open" disabled title="Mirror only — visit the local dashboard to open">↗ Open :1880</button>
-          <button class="recovery-start" disabled title="Mirror only — visit the local dashboard to start">▶ Start</button>
-          <button class="recovery-term" disabled title="Mirror only">⬜ Terminal</button>
+          <button class="recovery-open" disabled title="Not yet uploaded to GitHub — lives locally only">⊘ Not on GitHub</button>
+               <button class="recovery-term" disabled title="Mirror only">⬜ Terminal</button>
         </div>
       </div>
     </article>
@@ -1016,9 +1031,9 @@
       </div>
       <div class="recovery-panel">
         <div class="recovery-btns">
-          <button class="recovery-open" disabled title="Mirror only — visit the local dashboard to open">↗ Open :3999</button>
-          <button class="recovery-start" disabled title="Mirror only — visit the local dashboard to start">▶ Start</button>
-          <button class="recovery-term" disabled title="Mirror only">⬜ Terminal</button>
+          <a class="recovery-open" href="https://github.com/lozturner/org-sim" target="_blank" rel="noopener" title="Open source on GitHub">🐙 View Source</a>
+               <a class="recovery-start" href="https://github.com/lozturner/org-sim/archive/refs/heads/main.zip" title="Download ZIP of main branch">⬇ ZIP</a>
+               <button class="recovery-term" onclick="copyClone('https://github.com/lozturner/org-sim.git', event)" title="Copy git clone command">📋 Clone</button>
         </div>
       </div>
     </article>
@@ -1040,9 +1055,9 @@
       </div>
       <div class="recovery-panel">
         <div class="recovery-btns">
-          <button class="recovery-open" disabled title="Mirror only — visit the local dashboard to open">↗ Open</button>
-          <button class="recovery-start" disabled title="Mirror only — visit the local dashboard to start">▶ Start</button>
-          <button class="recovery-term" disabled title="Mirror only">⬜ Terminal</button>
+          <a class="recovery-open" href="https://github.com/lozturner/personal-ai-system" target="_blank" rel="noopener" title="Open source on GitHub">🐙 View Source</a>
+               <a class="recovery-start" href="https://github.com/lozturner/personal-ai-system/archive/refs/heads/main.zip" title="Download ZIP of main branch">⬇ ZIP</a>
+               <button class="recovery-term" onclick="copyClone('https://github.com/lozturner/personal-ai-system.git', event)" title="Copy git clone command">📋 Clone</button>
         </div>
       </div>
     </article>
@@ -1064,9 +1079,9 @@
       </div>
       <div class="recovery-panel">
         <div class="recovery-btns">
-          <button class="recovery-open" disabled title="Mirror only — visit the local dashboard to open">↗ Open :8776</button>
-          <button class="recovery-start" disabled title="Mirror only — visit the local dashboard to start">▶ Start</button>
-          <button class="recovery-term" disabled title="Mirror only">⬜ Terminal</button>
+          <a class="recovery-open" href="https://github.com/lozturner/laurence-bring" target="_blank" rel="noopener" title="Open source on GitHub">🐙 View Source</a>
+               <a class="recovery-start" href="https://github.com/lozturner/laurence-bring/archive/refs/heads/main.zip" title="Download ZIP of main branch">⬇ ZIP</a>
+               <button class="recovery-term" onclick="copyClone('https://github.com/lozturner/laurence-bring.git', event)" title="Copy git clone command">📋 Clone</button>
         </div>
       </div>
     </article>
@@ -1088,9 +1103,9 @@
       </div>
       <div class="recovery-panel">
         <div class="recovery-btns">
-          <button class="recovery-open" disabled title="Mirror only — visit the local dashboard to open">↗ Open :8786</button>
-          <button class="recovery-start" disabled title="Mirror only — visit the local dashboard to start">▶ Start</button>
-          <button class="recovery-term" disabled title="Mirror only">⬜ Terminal</button>
+          <a class="recovery-open" href="https://github.com/lozturner/laurence-bring" target="_blank" rel="noopener" title="Open source on GitHub">🐙 View Source</a>
+               <a class="recovery-start" href="https://github.com/lozturner/laurence-bring/archive/refs/heads/main.zip" title="Download ZIP of main branch">⬇ ZIP</a>
+               <button class="recovery-term" onclick="copyClone('https://github.com/lozturner/laurence-bring.git', event)" title="Copy git clone command">📋 Clone</button>
         </div>
       </div>
     </article>
@@ -1112,9 +1127,9 @@
       </div>
       <div class="recovery-panel">
         <div class="recovery-btns">
-          <button class="recovery-open" disabled title="Mirror only — visit the local dashboard to open">↗ Open :8000</button>
-          <button class="recovery-start" disabled title="Mirror only — visit the local dashboard to start">▶ Start</button>
-          <button class="recovery-term" disabled title="Mirror only">⬜ Terminal</button>
+          <a class="recovery-open" href="https://github.com/lozturner/laurence-maia" target="_blank" rel="noopener" title="Open source on GitHub">🐙 View Source</a>
+               <a class="recovery-start" href="https://github.com/lozturner/laurence-maia/archive/refs/heads/main.zip" title="Download ZIP of main branch">⬇ ZIP</a>
+               <button class="recovery-term" onclick="copyClone('https://github.com/lozturner/laurence-maia.git', event)" title="Copy git clone command">📋 Clone</button>
         </div>
       </div>
     </article>
@@ -1136,9 +1151,9 @@
       </div>
       <div class="recovery-panel">
         <div class="recovery-btns">
-          <button class="recovery-open" disabled title="Mirror only — visit the local dashboard to open">↗ Open</button>
-          <button class="recovery-start" disabled title="Mirror only — visit the local dashboard to start">▶ Start</button>
-          <button class="recovery-term" disabled title="Mirror only">⬜ Terminal</button>
+          <a class="recovery-open" href="https://github.com/lozturner/sandra" target="_blank" rel="noopener" title="Open source on GitHub">🐙 View Source</a>
+               <a class="recovery-start" href="https://github.com/lozturner/sandra/archive/refs/heads/main.zip" title="Download ZIP of main branch">⬇ ZIP</a>
+               <button class="recovery-term" onclick="copyClone('https://github.com/lozturner/sandra.git', event)" title="Copy git clone command">📋 Clone</button>
         </div>
       </div>
     </article>
@@ -1160,9 +1175,9 @@
       </div>
       <div class="recovery-panel">
         <div class="recovery-btns">
-          <button class="recovery-open" disabled title="Mirror only — visit the local dashboard to open">↗ Open :8775</button>
-          <button class="recovery-start" disabled title="Mirror only — visit the local dashboard to start">▶ Start</button>
-          <button class="recovery-term" disabled title="Mirror only">⬜ Terminal</button>
+          <a class="recovery-open" href="https://github.com/lozturner/laurence-bring" target="_blank" rel="noopener" title="Open source on GitHub">🐙 View Source</a>
+               <a class="recovery-start" href="https://github.com/lozturner/laurence-bring/archive/refs/heads/main.zip" title="Download ZIP of main branch">⬇ ZIP</a>
+               <button class="recovery-term" onclick="copyClone('https://github.com/lozturner/laurence-bring.git', event)" title="Copy git clone command">📋 Clone</button>
         </div>
       </div>
     </article>
@@ -1184,9 +1199,9 @@
       </div>
       <div class="recovery-panel">
         <div class="recovery-btns">
-          <button class="recovery-open" disabled title="Mirror only — visit the local dashboard to open">↗ Open :7332</button>
-          <button class="recovery-start" disabled title="Mirror only — visit the local dashboard to start">▶ Start</button>
-          <button class="recovery-term" disabled title="Mirror only">⬜ Terminal</button>
+          <a class="recovery-open" href="https://github.com/lozturner/laurence-see-ahead" target="_blank" rel="noopener" title="Open source on GitHub">🐙 View Source</a>
+               <a class="recovery-start" href="https://github.com/lozturner/laurence-see-ahead/archive/refs/heads/main.zip" title="Download ZIP of main branch">⬇ ZIP</a>
+               <button class="recovery-term" onclick="copyClone('https://github.com/lozturner/laurence-see-ahead.git', event)" title="Copy git clone command">📋 Clone</button>
         </div>
       </div>
     </article>
@@ -1208,9 +1223,9 @@
       </div>
       <div class="recovery-panel">
         <div class="recovery-btns">
-          <button class="recovery-open" disabled title="Mirror only — visit the local dashboard to open">↗ Open :7331</button>
-          <button class="recovery-start" disabled title="Mirror only — visit the local dashboard to start">▶ Start</button>
-          <button class="recovery-term" disabled title="Mirror only">⬜ Terminal</button>
+          <a class="recovery-open" href="https://github.com/lozturner/laurence-see-ahead" target="_blank" rel="noopener" title="Open source on GitHub">🐙 View Source</a>
+               <a class="recovery-start" href="https://github.com/lozturner/laurence-see-ahead/archive/refs/heads/main.zip" title="Download ZIP of main branch">⬇ ZIP</a>
+               <button class="recovery-term" onclick="copyClone('https://github.com/lozturner/laurence-see-ahead.git', event)" title="Copy git clone command">📋 Clone</button>
         </div>
       </div>
     </article>
@@ -1232,9 +1247,9 @@
       </div>
       <div class="recovery-panel">
         <div class="recovery-btns">
-          <button class="recovery-open" disabled title="Mirror only — visit the local dashboard to open">↗ Open</button>
-          <button class="recovery-start" disabled title="Mirror only — visit the local dashboard to start">▶ Start</button>
-          <button class="recovery-term" disabled title="Mirror only">⬜ Terminal</button>
+          <a class="recovery-open" href="https://github.com/lozturner/sentinel-bar" target="_blank" rel="noopener" title="Open source on GitHub">🐙 View Source</a>
+               <a class="recovery-start" href="https://github.com/lozturner/sentinel-bar/archive/refs/heads/main.zip" title="Download ZIP of main branch">⬇ ZIP</a>
+               <button class="recovery-term" onclick="copyClone('https://github.com/lozturner/sentinel-bar.git', event)" title="Copy git clone command">📋 Clone</button>
         </div>
       </div>
     </article>
@@ -1256,9 +1271,9 @@
       </div>
       <div class="recovery-panel">
         <div class="recovery-btns">
-          <button class="recovery-open" disabled title="Mirror only — visit the local dashboard to open">↗ Open :8767</button>
-          <button class="recovery-start" disabled title="Mirror only — visit the local dashboard to start">▶ Start</button>
-          <button class="recovery-term" disabled title="Mirror only">⬜ Terminal</button>
+          <a class="recovery-open" href="https://github.com/lozturner/laurence-bring" target="_blank" rel="noopener" title="Open source on GitHub">🐙 View Source</a>
+               <a class="recovery-start" href="https://github.com/lozturner/laurence-bring/archive/refs/heads/main.zip" title="Download ZIP of main branch">⬇ ZIP</a>
+               <button class="recovery-term" onclick="copyClone('https://github.com/lozturner/laurence-bring.git', event)" title="Copy git clone command">📋 Clone</button>
         </div>
       </div>
     </article>
@@ -1280,9 +1295,9 @@
       </div>
       <div class="recovery-panel">
         <div class="recovery-btns">
-          <button class="recovery-open" disabled title="Mirror only — visit the local dashboard to open">↗ Open :8769</button>
-          <button class="recovery-start" disabled title="Mirror only — visit the local dashboard to start">▶ Start</button>
-          <button class="recovery-term" disabled title="Mirror only">⬜ Terminal</button>
+          <a class="recovery-open" href="https://github.com/lozturner/laurence-bring" target="_blank" rel="noopener" title="Open source on GitHub">🐙 View Source</a>
+               <a class="recovery-start" href="https://github.com/lozturner/laurence-bring/archive/refs/heads/main.zip" title="Download ZIP of main branch">⬇ ZIP</a>
+               <button class="recovery-term" onclick="copyClone('https://github.com/lozturner/laurence-bring.git', event)" title="Copy git clone command">📋 Clone</button>
         </div>
       </div>
     </article>
@@ -1304,9 +1319,9 @@
       </div>
       <div class="recovery-panel">
         <div class="recovery-btns">
-          <button class="recovery-open" disabled title="Mirror only — visit the local dashboard to open">↗ Open :8780</button>
-          <button class="recovery-start" disabled title="Mirror only — visit the local dashboard to start">▶ Start</button>
-          <button class="recovery-term" disabled title="Mirror only">⬜ Terminal</button>
+          <a class="recovery-open" href="https://github.com/lozturner/laurence-bring" target="_blank" rel="noopener" title="Open source on GitHub">🐙 View Source</a>
+               <a class="recovery-start" href="https://github.com/lozturner/laurence-bring/archive/refs/heads/main.zip" title="Download ZIP of main branch">⬇ ZIP</a>
+               <button class="recovery-term" onclick="copyClone('https://github.com/lozturner/laurence-bring.git', event)" title="Copy git clone command">📋 Clone</button>
         </div>
       </div>
     </article>
@@ -1328,9 +1343,9 @@
       </div>
       <div class="recovery-panel">
         <div class="recovery-btns">
-          <button class="recovery-open" disabled title="Mirror only — visit the local dashboard to open">↗ Open :3007</button>
-          <button class="recovery-start" disabled title="Mirror only — visit the local dashboard to start">▶ Start</button>
-          <button class="recovery-term" disabled title="Mirror only">⬜ Terminal</button>
+          <a class="recovery-open" href="https://github.com/sqlhabit/sql_schema_visualizer" target="_blank" rel="noopener" title="Open source on GitHub">🐙 View Source</a>
+               <a class="recovery-start" href="https://github.com/sqlhabit/sql_schema_visualizer/archive/refs/heads/main.zip" title="Download ZIP of main branch">⬇ ZIP</a>
+               <button class="recovery-term" onclick="copyClone('https://github.com/sqlhabit/sql_schema_visualizer.git', event)" title="Copy git clone command">📋 Clone</button>
         </div>
       </div>
     </article>
@@ -1352,9 +1367,9 @@
       </div>
       <div class="recovery-panel">
         <div class="recovery-btns">
-          <button class="recovery-open" disabled title="Mirror only — visit the local dashboard to open">↗ Open :5173</button>
-          <button class="recovery-start" disabled title="Mirror only — visit the local dashboard to start">▶ Start</button>
-          <button class="recovery-term" disabled title="Mirror only">⬜ Terminal</button>
+          <a class="recovery-open" href="https://github.com/lozturner/super-canvas-app" target="_blank" rel="noopener" title="Open source on GitHub">🐙 View Source</a>
+               <a class="recovery-start" href="https://github.com/lozturner/super-canvas-app/archive/refs/heads/main.zip" title="Download ZIP of main branch">⬇ ZIP</a>
+               <button class="recovery-term" onclick="copyClone('https://github.com/lozturner/super-canvas-app.git', event)" title="Copy git clone command">📋 Clone</button>
         </div>
       </div>
     </article>
@@ -1376,9 +1391,9 @@
       </div>
       <div class="recovery-panel">
         <div class="recovery-btns">
-          <button class="recovery-open" disabled title="Mirror only — visit the local dashboard to open">↗ Open :5111</button>
-          <button class="recovery-start" disabled title="Mirror only — visit the local dashboard to start">▶ Start</button>
-          <button class="recovery-term" disabled title="Mirror only">⬜ Terminal</button>
+          <a class="recovery-open" href="https://github.com/lozturner/voice-commander" target="_blank" rel="noopener" title="Open source on GitHub">🐙 View Source</a>
+               <a class="recovery-start" href="https://github.com/lozturner/voice-commander/archive/refs/heads/main.zip" title="Download ZIP of main branch">⬇ ZIP</a>
+               <button class="recovery-term" onclick="copyClone('https://github.com/lozturner/voice-commander.git', event)" title="Copy git clone command">📋 Clone</button>
         </div>
       </div>
     </article>
@@ -1400,9 +1415,9 @@
       </div>
       <div class="recovery-panel">
         <div class="recovery-btns">
-          <button class="recovery-open" disabled title="Mirror only — visit the local dashboard to open">↗ Open</button>
-          <button class="recovery-start" disabled title="Mirror only — visit the local dashboard to start">▶ Start</button>
-          <button class="recovery-term" disabled title="Mirror only">⬜ Terminal</button>
+          <a class="recovery-open" href="https://github.com/lozturner/wait-buddy" target="_blank" rel="noopener" title="Open source on GitHub">🐙 View Source</a>
+               <a class="recovery-start" href="https://github.com/lozturner/wait-buddy/archive/refs/heads/main.zip" title="Download ZIP of main branch">⬇ ZIP</a>
+               <button class="recovery-term" onclick="copyClone('https://github.com/lozturner/wait-buddy.git', event)" title="Copy git clone command">📋 Clone</button>
         </div>
       </div>
     </article>
@@ -1424,9 +1439,9 @@
       </div>
       <div class="recovery-panel">
         <div class="recovery-btns">
-          <button class="recovery-open" disabled title="Mirror only — visit the local dashboard to open">↗ Open :8781</button>
-          <button class="recovery-start" disabled title="Mirror only — visit the local dashboard to start">▶ Start</button>
-          <button class="recovery-term" disabled title="Mirror only">⬜ Terminal</button>
+          <a class="recovery-open" href="https://github.com/lozturner/laurence-bring" target="_blank" rel="noopener" title="Open source on GitHub">🐙 View Source</a>
+               <a class="recovery-start" href="https://github.com/lozturner/laurence-bring/archive/refs/heads/main.zip" title="Download ZIP of main branch">⬇ ZIP</a>
+               <button class="recovery-term" onclick="copyClone('https://github.com/lozturner/laurence-bring.git', event)" title="Copy git clone command">📋 Clone</button>
         </div>
       </div>
     </article>
@@ -1448,9 +1463,9 @@
       </div>
       <div class="recovery-panel">
         <div class="recovery-btns">
-          <button class="recovery-open" disabled title="Mirror only — visit the local dashboard to open">↗ Open :5001</button>
-          <button class="recovery-start" disabled title="Mirror only — visit the local dashboard to start">▶ Start</button>
-          <button class="recovery-term" disabled title="Mirror only">⬜ Terminal</button>
+          <a class="recovery-open" href="https://github.com/lozturner/wifi-sentinel" target="_blank" rel="noopener" title="Open source on GitHub">🐙 View Source</a>
+               <a class="recovery-start" href="https://github.com/lozturner/wifi-sentinel/archive/refs/heads/main.zip" title="Download ZIP of main branch">⬇ ZIP</a>
+               <button class="recovery-term" onclick="copyClone('https://github.com/lozturner/wifi-sentinel.git', event)" title="Copy git clone command">📋 Clone</button>
         </div>
       </div>
     </article>
@@ -1472,9 +1487,9 @@
       </div>
       <div class="recovery-panel">
         <div class="recovery-btns">
-          <button class="recovery-open" disabled title="Mirror only — visit the local dashboard to open">↗ Open</button>
-          <button class="recovery-start" disabled title="Mirror only — visit the local dashboard to start">▶ Start</button>
-          <button class="recovery-term" disabled title="Mirror only">⬜ Terminal</button>
+          <a class="recovery-open" href="https://github.com/lozturner/task-manager-game" target="_blank" rel="noopener" title="Open source on GitHub">🐙 View Source</a>
+               <a class="recovery-start" href="https://github.com/lozturner/task-manager-game/archive/refs/heads/main.zip" title="Download ZIP of main branch">⬇ ZIP</a>
+               <button class="recovery-term" onclick="copyClone('https://github.com/lozturner/task-manager-game.git', event)" title="Copy git clone command">📋 Clone</button>
         </div>
       </div>
     </article>
@@ -1496,9 +1511,9 @@
       </div>
       <div class="recovery-panel">
         <div class="recovery-btns">
-          <button class="recovery-open" disabled title="Mirror only — visit the local dashboard to open">↗ Open :8773</button>
-          <button class="recovery-start" disabled title="Mirror only — visit the local dashboard to start">▶ Start</button>
-          <button class="recovery-term" disabled title="Mirror only">⬜ Terminal</button>
+          <a class="recovery-open" href="https://github.com/lozturner/laurence-bring" target="_blank" rel="noopener" title="Open source on GitHub">🐙 View Source</a>
+               <a class="recovery-start" href="https://github.com/lozturner/laurence-bring/archive/refs/heads/main.zip" title="Download ZIP of main branch">⬇ ZIP</a>
+               <button class="recovery-term" onclick="copyClone('https://github.com/lozturner/laurence-bring.git', event)" title="Copy git clone command">📋 Clone</button>
         </div>
       </div>
     </article>
@@ -1520,9 +1535,9 @@
       </div>
       <div class="recovery-panel">
         <div class="recovery-btns">
-          <button class="recovery-open" disabled title="Mirror only — visit the local dashboard to open">↗ Open</button>
-          <button class="recovery-start" disabled title="Mirror only — visit the local dashboard to start">▶ Start</button>
-          <button class="recovery-term" disabled title="Mirror only">⬜ Terminal</button>
+          <a class="recovery-open" href="https://github.com/lozturner/laurence-wispr" target="_blank" rel="noopener" title="Open source on GitHub">🐙 View Source</a>
+               <a class="recovery-start" href="https://github.com/lozturner/laurence-wispr/archive/refs/heads/main.zip" title="Download ZIP of main branch">⬇ ZIP</a>
+               <button class="recovery-term" onclick="copyClone('https://github.com/lozturner/laurence-wispr.git', event)" title="Copy git clone command">📋 Clone</button>
         </div>
       </div>
     </article>
@@ -1544,9 +1559,9 @@
       </div>
       <div class="recovery-panel">
         <div class="recovery-btns">
-          <button class="recovery-open" disabled title="Mirror only — visit the local dashboard to open">↗ Open :8785</button>
-          <button class="recovery-start" disabled title="Mirror only — visit the local dashboard to start">▶ Start</button>
-          <button class="recovery-term" disabled title="Mirror only">⬜ Terminal</button>
+          <a class="recovery-open" href="https://github.com/lozturner/laurence-bring" target="_blank" rel="noopener" title="Open source on GitHub">🐙 View Source</a>
+               <a class="recovery-start" href="https://github.com/lozturner/laurence-bring/archive/refs/heads/main.zip" title="Download ZIP of main branch">⬇ ZIP</a>
+               <button class="recovery-term" onclick="copyClone('https://github.com/lozturner/laurence-bring.git', event)" title="Copy git clone command">📋 Clone</button>
         </div>
       </div>
     </article>
@@ -1568,9 +1583,8 @@
       </div>
       <div class="recovery-panel">
         <div class="recovery-btns">
-          <button class="recovery-open" disabled title="Mirror only — visit the local dashboard to open">↗ Open :80</button>
-          <button class="recovery-start" disabled title="Mirror only — visit the local dashboard to start">▶ Start</button>
-          <button class="recovery-term" disabled title="Mirror only">⬜ Terminal</button>
+          <button class="recovery-open" disabled title="Not yet uploaded to GitHub — lives locally only">⊘ Not on GitHub</button>
+               <button class="recovery-term" disabled title="Mirror only">⬜ Terminal</button>
         </div>
       </div>
     </article>
@@ -1582,7 +1596,24 @@
   <a href="https://github.com/lozturner/laurence-localhost-v2">source on GitHub</a>
 </footer>
 
+<div class="toast" id="toast"></div>
 <script>
+  // Copy-to-clipboard helper for the "Clone" button on each card
+  async function copyClone(url, evt) {
+    if (evt) evt.stopPropagation();
+    const cmd = 'git clone ' + url;
+    try { await navigator.clipboard.writeText(cmd); } catch {
+      const ta = document.createElement('textarea');
+      ta.value = cmd; document.body.appendChild(ta); ta.select();
+      document.execCommand('copy'); ta.remove();
+    }
+    const t = document.getElementById('toast');
+    t.textContent = 'Copied: ' + cmd;
+    t.classList.add('visible');
+    clearTimeout(window._tt);
+    window._tt = setTimeout(() => t.classList.remove('visible'), 2200);
+  }
+
   // Client-side search + framework filter. No network calls — pure DOM work.
   const cards = Array.from(document.querySelectorAll('.card'));
   const search = document.getElementById('searchInput');
