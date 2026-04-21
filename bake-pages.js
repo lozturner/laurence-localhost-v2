@@ -33,6 +33,8 @@ http.get('http://127.0.0.1:4343/api/projects', (res) => {
         pythonProject: !!p.pythonProject,
         hasReadme: !!p.hasReadme,
         hasThumb: fs.existsSync(path.join(THUMBS_IN, `${p.id}.png`)),
+        // Probe .git/config for a remote URL so Pages buttons can link out
+        githubUrl: readGithubRemote(p.path),
       }));
 
     // Prep output dir — wipe pages-bake clean each run for deterministic diffs
@@ -62,6 +64,24 @@ http.get('http://127.0.0.1:4343/api/projects', (res) => {
   console.error('bake failed — is v2 running on :4343?', e.message);
   process.exit(1);
 });
+
+// Read a project folder's .git/config → normalised https GitHub URL, or null
+function readGithubRemote(projectPath) {
+  if (!projectPath) return null;
+  try {
+    const cfg = fs.readFileSync(path.join(projectPath, '.git', 'config'), 'utf8');
+    const m = cfg.match(/url\s*=\s*(\S+)/);
+    if (!m) return null;
+    let url = m[1].trim();
+    // git@github.com:user/repo.git → https://github.com/user/repo
+    url = url.replace(/^git@github\.com:/, 'https://github.com/');
+    url = url.replace(/\.git$/, '');
+    if (!/^https?:\/\//.test(url)) return null;
+    return url;
+  } catch {
+    return null;
+  }
+}
 
 // Clean up auto-generated descriptions so they don't read like debug output
 function cleanDesc(raw) {
@@ -163,9 +183,12 @@ function renderCard(p) {
       </div>
       <div class="recovery-panel">
         <div class="recovery-btns">
-          <button class="recovery-open" disabled title="Mirror only — visit the local dashboard to open">↗ Open${p.ports[0] ? ' :' + p.ports[0] : ''}</button>
-          <button class="recovery-start" disabled title="Mirror only — visit the local dashboard to start">▶ Start</button>
-          <button class="recovery-term" disabled title="Mirror only">⬜ Terminal</button>
+          ${p.githubUrl
+            ? `<a class="recovery-open" href="${esc(p.githubUrl)}" target="_blank" rel="noopener" title="Open source on GitHub">🐙 View Source</a>
+               <a class="recovery-start" href="${esc(p.githubUrl)}/archive/HEAD.zip" title="Download ZIP of default branch">⬇ ZIP</a>
+               <button class="recovery-term" onclick="copyClone('${esc(p.githubUrl)}.git', event)" title="Copy git clone command">📋 Clone</button>`
+            : `<button class="recovery-open" disabled title="Not yet uploaded to GitHub — lives locally only">⊘ Not on GitHub</button>
+               <button class="recovery-term" disabled title="Mirror only">⬜ Terminal</button>`}
         </div>
       </div>
     </article>`;
@@ -182,6 +205,7 @@ function render(projects) {
   const cards = projects.map(renderCard).join('\n');
   const fwOptions = fwSet.map(f => `<option value="${esc(f)}">${esc(f)}</option>`).join('');
   const withThumbs = projects.filter(p => p.hasThumb).length;
+  const withGithub = projects.filter(p => p.githubUrl).length;
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -368,11 +392,28 @@ function render(projects) {
   .recovery-open, .recovery-start, .recovery-term {
     padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 600;
     border: 1px solid; transition: all 0.2s; white-space: nowrap;
+    text-decoration: none; display: inline-flex; align-items: center; justify-content: center;
+    font-family: inherit; cursor: pointer;
   }
+  a.recovery-open, a.recovery-start { text-decoration: none; }
   .recovery-open  { border-color: var(--accent); background: var(--accent-glow); color: var(--accent); flex: 1; text-align: center; }
+  .recovery-open:hover { background: var(--accent); color: #fff; }
   .recovery-start { border-color: var(--success); background: var(--success-dim); color: var(--success); }
+  .recovery-start:hover { background: var(--success); color: #000; }
   .recovery-term  { border-color: var(--border); background: transparent; color: var(--text-secondary); }
+  .recovery-term:hover { background: var(--bg-card-hover); color: var(--text-primary); }
   .recovery-panel button[disabled] { opacity: 0.4; cursor: not-allowed; }
+  .recovery-panel button[disabled]:hover { background: transparent; color: var(--text-secondary); }
+
+  .toast {
+    position: fixed; bottom: 24px; right: 24px; z-index: 300;
+    padding: 12px 20px; border-radius: 8px; font-size: 13px;
+    background: var(--bg-card); border: 1px solid rgba(34,197,94,0.3);
+    color: var(--text-primary); box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+    opacity: 0; transform: translateY(12px); transition: opacity 0.2s, transform 0.2s;
+    pointer-events: none;
+  }
+  .toast.visible { opacity: 1; transform: translateY(0); }
 
   /* Empty state */
   .empty-state {
@@ -436,6 +477,7 @@ function render(projects) {
   <div class="stat"><span class="stat-value">${projects.length}</span> Projects</div>
   <div class="stat"><span class="stat-value">${fwSet.length}</span> Frameworks</div>
   <div class="stat"><span class="stat-value mirrored">${withThumbs}</span> With Thumbnails</div>
+  <div class="stat"><span class="stat-value" style="color:var(--success)">${withGithub}</span> On GitHub</div>
 </div>
 
 <main id="grid">
@@ -448,7 +490,24 @@ ${cards}
   <a href="https://github.com/lozturner/laurence-localhost-v2">source on GitHub</a>
 </footer>
 
+<div class="toast" id="toast"></div>
 <script>
+  // Copy-to-clipboard helper for the "Clone" button on each card
+  async function copyClone(url, evt) {
+    if (evt) evt.stopPropagation();
+    const cmd = 'git clone ' + url;
+    try { await navigator.clipboard.writeText(cmd); } catch {
+      const ta = document.createElement('textarea');
+      ta.value = cmd; document.body.appendChild(ta); ta.select();
+      document.execCommand('copy'); ta.remove();
+    }
+    const t = document.getElementById('toast');
+    t.textContent = 'Copied: ' + cmd;
+    t.classList.add('visible');
+    clearTimeout(window._tt);
+    window._tt = setTimeout(() => t.classList.remove('visible'), 2200);
+  }
+
   // Client-side search + framework filter. No network calls — pure DOM work.
   const cards = Array.from(document.querySelectorAll('.card'));
   const search = document.getElementById('searchInput');

@@ -6,3 +6,4 @@ public/thumbnails/
 !.env.example
 /data/
 pages-bake/
+bulk-push.log.json
