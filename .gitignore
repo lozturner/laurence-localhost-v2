@@ -8,3 +8,6 @@ public/thumbnails/
 pages-bake/
 bulk-push.log.json
 pages-map.json
+_build-tmp/
+projects.json
+audit.json

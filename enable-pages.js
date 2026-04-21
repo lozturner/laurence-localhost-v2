@@ -57,16 +57,30 @@ function hasHtml(repo, branch) {
   // Only act on repos that look like they came from this registry OR have html content.
   // Avoid disturbing unrelated older repos (awesome-*, turnerworks, etc.)
   const REGISTRY_SLUGS = new Set([
-    'ai-whack', 'alexa-puck', 'beatyourselfup', 'binman', 'brain-sim', 'claude-home-hub',
-    'claude-v1', 'donner-pad', 'fos', 'html-editor', 'laurence-bring', 'laurence-lens',
-    'laurence-lenz', 'laurence-maia', 'laurence-see-ahead', 'laurence-voice-control',
-    'laurence-watchers', 'laurence-windows-chatbot', 'laurence-wispr', 'lawrence-move-in',
-    'lawrence-niggly', 'localhost-phonebook', 'mere-mortal', 'movie-magic', 'my-react-app',
-    'org-sim', 'personal-ai-system', 'sandra', 'sentinel-bar', 'super-canvas-app',
-    'task-manager-game', 'voice-commander', 'wait-buddy', 'wifi-sentinel',
+    'ai-whack', 'alexa-puck', 'beatyourselfup', 'brain-sim',
+    'donner-pad', 'fos', 'laurence-bring', 'laurence-lens',
+    'laurence-lenz', 'laurence-see-ahead', 'laurence-voice-control',
+    'laurence-watchers', 'lawrence-move-in',
+    'lawrence-niggly', 'mere-mortal', 'movie-magic',
+    'sentinel-bar', 'super-canvas-app', 'task-manager-game', 'wait-buddy',
+  ]);
+  // Hard-skip: Electron / Node-only apps that can't usefully render in browser.
+  // Their Pages URL would just serve a misleading Jekyll-rendered README.
+  const NEVER_ENABLE = new Set([
+    'binman', 'claude-home-hub', 'claude-v1', 'sandra',
+    'localhost-phonebook', 'html-editor', 'org-sim',
+    'alexa-puck', 'laurence-windows-chatbot', 'laurence-wispr',
+    'wifi-sentinel', 'voice-commander', 'laurence-maia',
+    'personal-ai-system', 'my-react-app',
   ]);
 
   for (const { name, branch } of repos) {
+    if (NEVER_ENABLE.has(name)) {
+      // Ensure Pages is disabled (fall-through to ZIP on the dashboard Run button)
+      const del = gh(['api', '-X', 'DELETE', `repos/${GH_USER}/${name}/pages`]);
+      console.log(`  BLOCKED ${name.padEnd(28)} (electron-only — disabled Pages)`);
+      continue;
+    }
     if (!REGISTRY_SLUGS.has(name)) continue;
 
     const info = getPagesInfo(name);
