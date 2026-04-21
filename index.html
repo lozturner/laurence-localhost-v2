@@ -4,1670 +4,1554 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex">
-<title>Laurence Localhost v2 — Turner Foundry (read-only mirror)</title>
+<title>Laurence Localhost v2 — Turner Foundry</title>
 <style>
   :root {
-    --bg-primary: #0a0a0f; --bg-secondary: #0f0f17;
-    --bg-card: #12121a; --bg-card-hover: #1a1a25;
-    --accent: #6366f1; --accent-dim: #4f46e5;
-    --accent-glow: rgba(99, 102, 241, 0.15);
-    --danger: #ef4444; --warning: #f59e0b; --success: #22c55e;
-    --success-dim: rgba(34, 197, 94, 0.15);
-    --text-primary: #e2e8f0; --text-secondary: #94a3b8; --text-muted: #64748b;
-    --border: #1e293b; --border-light: #334155;
+    --bg: #0a0a0f; --bg2: #0f0f17; --card: #12121a; --card-hi: #1a1a25;
+    --accent: #6366f1; --accent-glow: rgba(99,102,241,0.15);
+    --success: #22c55e; --warning: #f59e0b; --danger: #ef4444;
+    --text: #e2e8f0; --dim: #94a3b8; --muted: #64748b;
+    --border: #1e293b; --border-hi: #334155;
     --foundry-a: #b45309; --foundry-b: #92400e;
   }
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
-    background: var(--bg-primary); color: var(--text-primary); min-height: 100vh;
-  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
 
-  /* Task Manager (cosmetic in mirror) */
-  .task-manager {
-    background: #09090e; border-bottom: 2px solid var(--accent);
-    position: sticky; top: 0; z-index: 200;
-    box-shadow: 0 2px 20px rgba(99,102,241,0.15);
+  /* ─── Login gate ─────────────────────────────────────────── */
+  #login-overlay {
+    position:fixed; inset:0; background:var(--bg);
+    display:flex; align-items:center; justify-content:center; z-index:1000;
   }
-  .tm-header {
-    display: flex; align-items: center; gap: 12px;
-    padding: 8px 16px; flex-wrap: wrap;
+  #login-overlay.hidden { display:none; }
+  .login-box {
+    background:var(--card); border:1px solid var(--border); border-radius:16px;
+    padding:40px 48px; max-width:420px; width:90%; text-align:center;
+    box-shadow:0 10px 40px rgba(0,0,0,0.4);
   }
-  .tm-title {
-    font-size: 12px; font-weight: 700; color: var(--accent);
-    letter-spacing: 1px; text-transform: uppercase; white-space: nowrap;
-  }
-  .tm-summary { display: flex; gap: 6px; flex-shrink: 0; }
-  .tm-pill {
-    padding: 2px 10px; border-radius: 20px; font-size: 11px;
-    font-weight: 700; border: 1px solid; white-space: nowrap;
-  }
-  .tm-running  { background: var(--success-dim); border-color: rgba(34,197,94,0.3); color: var(--success); }
-  .tm-stopped  { background: rgba(148,163,184,0.08); border-color: var(--border); color: var(--text-muted); }
-  .tm-conflict { background: var(--success-dim); border-color: rgba(34,197,94,0.3); color: var(--success); }
-  .tm-actions { display: flex; gap: 6px; margin-left: auto; }
-  .tm-btn {
-    padding: 5px 12px; border-radius: 6px; font-size: 12px; font-weight: 600;
-    border: 1px solid; white-space: nowrap; opacity: 0.45; cursor: not-allowed;
-    background: rgba(148,163,184,0.08); border-color: var(--border); color: var(--text-muted);
-  }
+  .login-box h1 { font-size:20px; margin-bottom:6px; display:flex; align-items:center; justify-content:center; gap:8px; }
+  .login-box h1 .icon { color:var(--foundry-a); font-size:24px; }
+  .login-box h1 .accent { color:var(--accent); }
+  .login-box .foundry-badge { display:inline-block; padding:2px 8px; border-radius:4px; font-size:10px; font-weight:700; background:linear-gradient(135deg,var(--foundry-a),var(--foundry-b)); color:#fef3c7; letter-spacing:1px; text-transform:uppercase; margin:8px 0 20px; }
+  .login-box p { font-size:13px; color:var(--dim); margin-bottom:24px; }
+  .login-box input { width:100%; padding:12px 16px; background:var(--bg); border:1px solid var(--border); border-radius:8px; color:var(--text); font-size:14px; outline:none; font-family:inherit; }
+  .login-box input:focus { border-color:var(--accent); }
+  .login-box button { width:100%; padding:12px; margin-top:12px; background:var(--accent); color:#fff; border:none; border-radius:8px; font-size:14px; font-weight:600; cursor:pointer; font-family:inherit; }
+  .login-box button:hover { background:#4f46e5; }
+  .login-box .err { color:var(--danger); font-size:12px; margin-top:8px; min-height:16px; }
 
-  /* Header */
-  header { background: var(--bg-secondary); border-bottom: 1px solid var(--border); padding: 16px 24px; }
-  .header-top { display: flex; align-items: center; gap: 16px; margin-bottom: 12px; flex-wrap: wrap; }
-  .header-top h1 {
-    font-size: 20px; font-weight: 700; color: var(--text-primary);
-    display: flex; align-items: center; gap: 8px; white-space: nowrap; flex-wrap: wrap;
-  }
-  .header-top h1 .accent { color: var(--accent); }
-  .header-top h1 .icon { color: var(--foundry-a); font-size: 22px; }
-  .foundry-badge {
-    display: inline-block; padding: 3px 10px; border-radius: 4px; font-size: 10px;
-    font-weight: 700; background: linear-gradient(135deg, var(--foundry-a), var(--foundry-b));
-    color: #fef3c7; letter-spacing: 1px; text-transform: uppercase;
-    border: 1px solid #78350f; box-shadow: 0 0 8px rgba(180,83,9,0.25);
-  }
-  .ro-badge {
-    display: inline-block; padding: 3px 10px; border-radius: 4px; font-size: 10px;
-    font-weight: 700; background: rgba(148,163,184,0.12); color: var(--text-secondary);
-    letter-spacing: 1px; text-transform: uppercase; border: 1px solid var(--border);
-  }
+  /* ─── Header ─────────────────────────────────────────────── */
+  header { background:var(--bg2); border-bottom:1px solid var(--border); padding:16px 24px; position:sticky; top:0; z-index:100; }
+  .header-top { display:flex; align-items:center; gap:16px; flex-wrap:wrap; margin-bottom:12px; }
+  h1.logo { font-size:20px; font-weight:700; display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+  h1.logo .icon { color:var(--foundry-a); font-size:22px; }
+  h1.logo .accent { color:var(--accent); }
+  .foundry-badge { display:inline-block; padding:3px 10px; border-radius:4px; font-size:10px; font-weight:700; background:linear-gradient(135deg,var(--foundry-a),var(--foundry-b)); color:#fef3c7; letter-spacing:1px; text-transform:uppercase; }
 
-  .controls { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; width: 100%; }
-  .search-input {
-    flex: 1; min-width: 200px; padding: 8px 14px;
-    background: var(--bg-primary); border: 1px solid var(--border);
-    border-radius: 8px; color: var(--text-primary); font-size: 14px; outline: none;
+  .controls { display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+  .search-input { flex:1; min-width:200px; padding:8px 14px; background:var(--bg); border:1px solid var(--border); border-radius:8px; color:var(--text); font-size:14px; outline:none; }
+  .search-input:focus { border-color:var(--accent); }
+  select { padding:8px 12px; background:var(--bg); border:1px solid var(--border); border-radius:8px; color:var(--text); font-size:14px; cursor:pointer; }
+  .btn-pill {
+    padding:6px 12px; border-radius:20px; font-size:12px; font-weight:600;
+    cursor:pointer; border:1px solid var(--border); background:transparent; color:var(--dim);
+    font-family:inherit; transition:all 0.15s;
   }
-  .search-input:focus { border-color: var(--accent); }
-  .search-input::placeholder { color: var(--text-muted); }
-  select {
-    padding: 8px 12px; background: var(--bg-primary); border: 1px solid var(--border);
-    border-radius: 8px; color: var(--text-primary); font-size: 14px; cursor: pointer;
-  }
+  .btn-pill:hover { border-color:var(--accent); color:var(--accent); }
+  .btn-pill.active { background:var(--accent); color:#fff; border-color:var(--accent); }
+  .btn-pill.cat-LIVE.active     { background:var(--success); border-color:var(--success); color:#000; }
+  .btn-pill.cat-DEMO.active     { background:var(--warning); border-color:var(--warning); color:#000; }
+  .btn-pill.cat-DOWNLOAD.active { background:var(--dim); border-color:var(--dim); color:#000; }
 
-  /* Banner */
-  .banner {
-    padding: 10px 24px; background: rgba(180,83,9,0.08);
-    border-bottom: 1px solid rgba(180,83,9,0.2); font-size: 13px; color: #fcd34d;
-  }
-  .banner strong { color: #fde68a; }
-  .banner a { color: var(--accent); text-decoration: none; border-bottom: 1px dotted var(--accent); }
-  .banner a:hover { color: var(--text-primary); border-color: var(--text-primary); }
+  /* ─── Stats strip ────────────────────────────────────────── */
+  .stats { display:flex; gap:20px; padding:10px 24px; background:var(--bg2); border-bottom:1px solid var(--border); flex-wrap:wrap; font-size:13px; color:var(--dim); }
+  .stat strong { color:var(--text); font-weight:700; margin-right:4px; }
+  .stat.live strong { color:var(--success); }
+  .stat.demo strong { color:var(--warning); }
+  .stat.dl   strong { color:var(--dim); }
+  .stat.ven  strong { color:var(--accent); }
 
-  /* Stats */
-  .stats-bar {
-    display: flex; gap: 20px; padding: 12px 24px;
-    background: var(--bg-secondary); border-bottom: 1px solid var(--border);
-  }
-  .stat { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text-secondary); }
-  .stat-value { font-weight: 700; color: var(--text-primary); font-size: 16px; }
-  .stat-value.mirrored { color: var(--warning); }
-
-  /* Grid */
-  main {
-    padding: 24px;
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-    gap: 16px;
-  }
-
-  /* Card */
+  /* ─── Grid ───────────────────────────────────────────────── */
+  main { padding:20px 24px; display:grid; grid-template-columns:repeat(auto-fill,minmax(320px,1fr)); gap:14px; }
   .card {
-    background: var(--bg-card); border: 1px solid var(--border);
-    border-radius: 12px; overflow: hidden; transition: all 0.2s;
-    display: flex; flex-direction: column;
+    background:var(--card); border:1px solid var(--border); border-radius:12px;
+    overflow:hidden; display:flex; flex-direction:column; transition:all 0.2s;
   }
-  .card:hover {
-    border-color: var(--border-light); background: var(--bg-card-hover);
-    transform: translateY(-1px); box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-  }
+  .card:hover { border-color:var(--border-hi); transform:translateY(-2px); box-shadow:0 6px 24px rgba(0,0,0,0.35); }
+  .card.hidden { display:none; }
 
-  .card-thumb {
-    height: 160px; background: var(--bg-primary);
-    position: relative; overflow: hidden;
-    display: flex; align-items: center; justify-content: center;
+  .card-thumb { position:relative; height:150px; background:var(--bg); overflow:hidden; }
+  .card-thumb img { width:100%; height:100%; object-fit:cover; }
+  .card-thumb .placeholder { font-size:48px; color:var(--accent); opacity:0.25; position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-weight:700; }
+  .framework-icon { position:absolute; top:8px; left:8px; font-size:12px; font-weight:700; background:rgba(0,0,0,0.7); padding:3px 8px; border-radius:6px; color:var(--text); border:1px solid rgba(255,255,255,0.08); }
+  .category-badge { position:absolute; top:8px; right:44px; padding:2px 8px; border-radius:4px; font-size:10px; font-weight:700; letter-spacing:0.5px; border:1px solid; }
+  .fav-btn {
+    position:absolute; top:8px; right:8px; width:28px; height:28px; border-radius:6px;
+    background:rgba(0,0,0,0.7); border:1px solid rgba(255,255,255,0.12); color:#fff;
+    font-size:14px; cursor:pointer; display:flex; align-items:center; justify-content:center;
+    transition:all 0.15s;
   }
-  .card-thumb img { width: 100%; height: 100%; object-fit: cover; }
-  .card-thumb .placeholder { font-size: 48px; opacity: 0.25; color: var(--accent); font-weight: 700; letter-spacing: -2px; }
-  .card-thumb .framework-icon {
-    position: absolute; top: 8px; left: 8px;
-    font-size: 14px; font-weight: 700; background: rgba(0,0,0,0.7);
-    padding: 3px 8px; border-radius: 6px; color: var(--text-primary);
-    border: 1px solid rgba(255,255,255,0.08);
-  }
-  .status-dot {
-    position: absolute; top: 10px; right: 10px;
-    width: 10px; height: 10px; border-radius: 50%;
-    background: var(--text-muted); border: 2px solid var(--bg-card);
-    opacity: 0.5;
-  }
+  .fav-btn:hover { background:rgba(245,158,11,0.2); border-color:var(--warning); color:var(--warning); }
+  .fav-btn.on { color:var(--warning); background:rgba(245,158,11,0.2); border-color:var(--warning); }
 
-  .card-body { padding: 14px; flex: 1; display: flex; flex-direction: column; }
-  .card-badges { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
-  .badge {
-    padding: 2px 8px; border-radius: 4px; font-size: 11px;
-    font-weight: 600; border: 1px solid;
-  }
-  .badge-framework { background: var(--accent-glow); border-color: rgba(99,102,241,0.3); color: var(--accent); }
-  .badge-nextjs    { background: rgba(0,0,0,0.3); border-color: #333; color: #fff; }
-  .badge-vite      { background: rgba(189,147,249,0.15); border-color: rgba(189,147,249,0.3); color: #bd93f9; }
-  .badge-react     { background: rgba(97,218,251,0.15); border-color: rgba(97,218,251,0.3); color: #61dafb; }
-  .badge-express   { background: rgba(34,197,94,0.15); border-color: rgba(34,197,94,0.3); color: #22c55e; }
-  .badge-electron  { background: rgba(148,163,184,0.15); border-color: rgba(148,163,184,0.3); color: #94a3b8; }
-  .badge-python    { background: rgba(250,204,21,0.15); border-color: rgba(250,204,21,0.3); color: #facc15; }
-  .badge-django    { background: rgba(16,185,129,0.15); border-color: rgba(16,185,129,0.3); color: #10b981; }
-  .badge-docker    { background: rgba(59,130,246,0.15); border-color: rgba(59,130,246,0.3); color: #3b82f6; }
-  .badge-static    { background: rgba(148,163,184,0.1);  border-color: rgba(148,163,184,0.2); color: #94a3b8; }
-  .badge-nodered   { background: rgba(239,68,68,0.15);  border-color: rgba(239,68,68,0.3); color: #ef4444; }
-  .badge-xampp     { background: rgba(251,146,60,0.15); border-color: rgba(251,146,60,0.3); color: #fb923c; }
-  .badge-flask     { background: rgba(148,163,184,0.15); border-color: rgba(148,163,184,0.3); color: #cbd5e1; }
-  .badge-readme    { background: rgba(250,204,21,0.08); border-color: rgba(250,204,21,0.2); color: #facc15; }
-  .badge-port {
-    background: rgba(148,163,184,0.1); border-color: var(--border);
-    color: var(--text-secondary); font-family: 'Courier New', monospace;
-  }
+  .card-body { padding:12px; flex:1; display:flex; flex-direction:column; gap:6px; }
+  .card-badges { display:flex; flex-wrap:wrap; gap:5px; }
+  .badge { padding:2px 8px; border-radius:4px; font-size:11px; font-weight:600; border:1px solid; }
+  .badge-framework { background:var(--accent-glow); border-color:rgba(99,102,241,0.3); color:var(--accent); }
+  .badge-nextjs { background:rgba(0,0,0,0.3); border-color:#333; color:#fff; }
+  .badge-vite { background:rgba(189,147,249,0.15); border-color:rgba(189,147,249,0.3); color:#bd93f9; }
+  .badge-react { background:rgba(97,218,251,0.15); border-color:rgba(97,218,251,0.3); color:#61dafb; }
+  .badge-express { background:rgba(34,197,94,0.15); border-color:rgba(34,197,94,0.3); color:#22c55e; }
+  .badge-electron { background:rgba(148,163,184,0.15); border-color:rgba(148,163,184,0.3); color:#94a3b8; }
+  .badge-python { background:rgba(250,204,21,0.15); border-color:rgba(250,204,21,0.3); color:#facc15; }
+  .badge-django { background:rgba(16,185,129,0.15); border-color:rgba(16,185,129,0.3); color:#10b981; }
+  .badge-docker { background:rgba(59,130,246,0.15); border-color:rgba(59,130,246,0.3); color:#3b82f6; }
+  .badge-static { background:rgba(148,163,184,0.1); border-color:rgba(148,163,184,0.2); color:#94a3b8; }
+  .badge-nodered { background:rgba(239,68,68,0.15); border-color:rgba(239,68,68,0.3); color:#ef4444; }
+  .badge-xampp { background:rgba(251,146,60,0.15); border-color:rgba(251,146,60,0.3); color:#fb923c; }
+  .badge-flask { background:rgba(148,163,184,0.15); border-color:rgba(148,163,184,0.3); color:#cbd5e1; }
+  .badge-port { background:rgba(148,163,184,0.1); border-color:var(--border); color:var(--dim); font-family:'Courier New',monospace; }
+  .card-name { font-size:15px; font-weight:600; color:var(--text); }
+  .card-desc { font-size:12px; color:var(--dim); line-height:1.4; flex:1;
+    display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
 
-  .card-name { font-size: 16px; font-weight: 600; margin-bottom: 4px; color: var(--text-primary); }
-  .card-desc {
-    font-size: 13px; color: var(--text-secondary); line-height: 1.4; flex: 1;
-    display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
+  .card-footer { padding:10px 12px; border-top:1px solid rgba(99,102,241,0.1); background:rgba(99,102,241,0.03); display:flex; gap:8px; align-items:center; }
+  .play-btn {
+    flex:1; padding:9px 14px; border-radius:8px; font-size:13px; font-weight:700;
+    text-align:center; text-decoration:none; background:var(--success); color:#000;
+    transition:all 0.15s; font-family:inherit;
   }
-  .card-desc:empty::before { content: '—'; color: var(--text-muted); }
-
-  .recovery-panel {
-    padding: 10px 14px; border-top: 1px solid rgba(99,102,241,0.12);
-    background: rgba(99,102,241,0.03);
+  .play-btn:hover { background:#16a34a; transform:scale(1.02); box-shadow:0 0 12px rgba(34,197,94,0.4); }
+  .card[data-category="DEMO"] .play-btn     { background:var(--warning); }
+  .card[data-category="DEMO"] .play-btn:hover { background:#d97706; box-shadow:0 0 12px rgba(245,158,11,0.4); }
+  .card[data-category="DOWNLOAD"] .play-btn  { background:var(--dim); }
+  .card[data-category="DOWNLOAD"] .play-btn:hover { background:#64748b; }
+  .card[data-category="VENDOR"] .play-btn   { background:var(--accent); color:#fff; }
+  .card[data-category="VENDOR"] .play-btn:hover { background:#4f46e5; }
+  .source-btn {
+    padding:8px 10px; border-radius:8px; border:1px solid var(--border); background:transparent;
+    color:var(--dim); text-decoration:none; font-size:14px; transition:all 0.15s;
   }
-  .recovery-btns { display: flex; gap: 6px; flex-wrap: wrap; }
-  .recovery-open, .recovery-start, .recovery-term,
-  .recovery-run, .recovery-source, .recovery-clone {
-    padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 600;
-    border: 1px solid; transition: all 0.15s; white-space: nowrap;
-    text-decoration: none; display: inline-flex; align-items: center; justify-content: center;
-    font-family: inherit; cursor: pointer;
+  .source-btn:hover { border-color:var(--accent); color:var(--accent); }
+
+  /* ─── Lightbox for DEMO category ─────────────────────────── */
+  .lightbox {
+    position:fixed; inset:0; background:rgba(0,0,0,0.9);
+    display:none; align-items:center; justify-content:center; z-index:500; padding:24px;
   }
-
-  /* RUN button — primary, variant-colored by target */
-  .recovery-run {
-    flex: 1; text-align: center;
-    border-color: var(--success); background: var(--success-dim); color: var(--success);
+  .lightbox.open { display:flex; }
+  .lightbox-inner {
+    background:var(--card); border:1px solid var(--border); border-radius:16px;
+    max-width:1100px; width:100%; max-height:92vh; overflow:auto;
+    display:grid; grid-template-columns:1fr 340px; gap:0;
   }
-  .recovery-run:hover { background: var(--success); color: #000; box-shadow: 0 0 10px rgba(34,197,94,0.3); }
-  .recovery-run.desktop { border-color: #94a3b8; background: rgba(148,163,184,0.12); color: #cbd5e1; }
-  .recovery-run.desktop:hover { background: #94a3b8; color: #0a0a0f; box-shadow: none; }
-  .recovery-run.replit  { border-color: #f26207; background: rgba(242,98,7,0.12); color: #fb923c; }
-  .recovery-run.replit:hover { background: #f26207; color: #fff; box-shadow: 0 0 10px rgba(242,98,7,0.3); }
-  .recovery-run.vercel  { border-color: #fff; background: rgba(255,255,255,0.06); color: #fff; }
-  .recovery-run.vercel:hover { background: #fff; color: #000; }
-
-  /* Source — secondary */
-  .recovery-source {
-    border-color: var(--accent); background: var(--accent-glow); color: var(--accent);
+  @media (max-width:900px) { .lightbox-inner { grid-template-columns:1fr; } }
+  .lightbox-img { background:var(--bg); display:flex; align-items:center; justify-content:center; padding:20px; }
+  .lightbox-img img { max-width:100%; max-height:80vh; border-radius:8px; box-shadow:0 4px 20px rgba(0,0,0,0.5); }
+  .lightbox-img .no-thumb { color:var(--muted); font-size:14px; }
+  .lightbox-info { padding:24px; display:flex; flex-direction:column; gap:14px; }
+  .lightbox-info h2 { font-size:22px; color:var(--text); }
+  .lightbox-info .cat-tag { display:inline-block; padding:3px 10px; border-radius:6px; font-size:11px; font-weight:700; align-self:flex-start; }
+  .lightbox-info p { font-size:14px; line-height:1.5; color:var(--dim); }
+  .lightbox-info code { background:var(--bg); padding:2px 6px; border-radius:4px; font-size:12px; color:var(--text); font-family:'Courier New',monospace; }
+  .lightbox-actions { display:flex; flex-wrap:wrap; gap:8px; margin-top:auto; }
+  .lightbox-actions a { flex:1; min-width:120px; padding:10px; border-radius:8px; text-align:center; text-decoration:none; font-size:13px; font-weight:600; }
+  .lightbox-actions .primary { background:var(--accent); color:#fff; }
+  .lightbox-actions .ghost { border:1px solid var(--border); color:var(--text); }
+  .lightbox-close {
+    position:absolute; top:20px; right:20px; width:36px; height:36px;
+    border-radius:50%; background:rgba(0,0,0,0.6); border:1px solid rgba(255,255,255,0.15);
+    color:#fff; font-size:18px; cursor:pointer; display:flex; align-items:center; justify-content:center;
   }
-  .recovery-source:hover { background: var(--accent); color: #fff; }
+  .lightbox-close:hover { background:var(--danger); border-color:var(--danger); }
+  .install-hint { background:var(--bg); border:1px solid var(--border); padding:12px; border-radius:8px; font-size:13px; line-height:1.5; color:var(--text); }
+  .install-hint strong { color:var(--warning); display:block; margin-bottom:6px; font-size:11px; letter-spacing:1px; text-transform:uppercase; }
 
-  /* Clone — icon-only */
-  .recovery-clone {
-    border-color: var(--border); background: transparent; color: var(--text-secondary);
-    padding: 6px 10px;
-  }
-  .recovery-clone:hover { background: var(--bg-card-hover); color: var(--text-primary); }
-
-  /* Legacy / vendored / disabled states */
-  a.recovery-open, a.recovery-start { text-decoration: none; }
-  .recovery-open  { border-color: var(--accent); background: var(--accent-glow); color: var(--accent); flex: 1; text-align: center; }
-  .recovery-open:hover { background: var(--accent); color: #fff; }
-  .recovery-start { border-color: var(--success); background: var(--success-dim); color: var(--success); }
-  .recovery-start:hover { background: var(--success); color: #000; }
-  .recovery-term  { border-color: var(--border); background: transparent; color: var(--text-secondary); }
-  .recovery-term:hover { background: var(--bg-card-hover); color: var(--text-primary); }
-  .recovery-panel button[disabled] { opacity: 0.4; cursor: not-allowed; }
-  .recovery-panel button[disabled]:hover { background: transparent; color: var(--text-secondary); }
-
+  /* ─── Toast ──────────────────────────────────────────────── */
   .toast {
-    position: fixed; bottom: 24px; right: 24px; z-index: 300;
-    padding: 12px 20px; border-radius: 8px; font-size: 13px;
-    background: var(--bg-card); border: 1px solid rgba(34,197,94,0.3);
-    color: var(--text-primary); box-shadow: 0 4px 20px rgba(0,0,0,0.4);
-    opacity: 0; transform: translateY(12px); transition: opacity 0.2s, transform 0.2s;
-    pointer-events: none;
+    position:fixed; bottom:20px; right:20px; background:var(--card); border:1px solid var(--success);
+    padding:10px 16px; border-radius:8px; font-size:13px; color:var(--text);
+    opacity:0; transform:translateY(10px); transition:all 0.2s; pointer-events:none;
   }
-  .toast.visible { opacity: 1; transform: translateY(0); }
+  .toast.visible { opacity:1; transform:translateY(0); }
 
-  /* Empty state */
-  .empty-state {
-    grid-column: 1 / -1; text-align: center; padding: 60px;
-    color: var(--text-muted); font-size: 15px;
-  }
-  .card.hidden { display: none; }
-
-  footer {
-    padding: 24px; color: var(--text-muted); font-size: 12px; text-align: center;
-    border-top: 1px solid var(--border);
-  }
-  footer a { color: var(--accent); text-decoration: none; }
-  footer a:hover { text-decoration: underline; }
+  .empty { grid-column:1/-1; text-align:center; padding:60px; color:var(--muted); font-size:15px; }
+  footer { padding:20px 24px; text-align:center; color:var(--muted); font-size:12px; border-top:1px solid var(--border); }
+  footer a { color:var(--accent); text-decoration:none; }
 </style>
 </head>
 <body>
 
-<!-- ══ TASK MANAGER (cosmetic mirror) ══════════════════════════════ -->
-<div class="task-manager">
-  <div class="tm-header">
-    <span class="tm-title">⬡ Task Manager</span>
-    <div class="tm-summary">
-      <span class="tm-pill tm-running">55 Mirrored</span>
-      <span class="tm-pill tm-stopped">Read-only</span>
-      <span class="tm-pill tm-conflict">✓ Clean</span>
-    </div>
-    <div class="tm-actions">
-      <button class="tm-btn" disabled title="Mirror only">▶ Start All</button>
-      <button class="tm-btn" disabled title="Mirror only">⚡ Fix Conflicts</button>
-      <button class="tm-btn" disabled title="Mirror only">↺ Re-scan</button>
-    </div>
+<!-- ─── LOGIN GATE ───────────────────────────────────────────── -->
+<div id="login-overlay">
+  <div class="login-box">
+    <h1><span class="icon">⚒</span> Laurence Localhost <span class="accent">v2</span></h1>
+    <div class="foundry-badge">Turner Foundry</div>
+    <p>Enter the password to view the project registry.</p>
+    <input type="password" id="login-pw" placeholder="Password" autocomplete="current-password">
+    <button onclick="tryLogin()">Unlock</button>
+    <div class="err" id="login-err"></div>
   </div>
 </div>
 
+<!-- ─── HEADER ──────────────────────────────────────────────── -->
 <header>
   <div class="header-top">
-    <h1>
-      <span class="icon">⚒</span>
-      Laurence Localhost <span class="accent">v2</span>
+    <h1 class="logo">
+      <span class="icon">⚒</span> Laurence Localhost <span class="accent">v2</span>
       <span class="foundry-badge">Turner Foundry</span>
-      <span class="ro-badge">Read-only mirror</span>
     </h1>
   </div>
   <div class="controls">
-    <input type="text" class="search-input" id="searchInput" placeholder="Search projects by name or framework...">
-    <select id="frameworkFilter">
-      <option value="">All Frameworks</option>
+    <input type="text" class="search-input" id="search" placeholder="Search projects…">
+    <select id="fw-filter">
+      <option value="">All frameworks</option>
       <option value="Create React App">Create React App</option><option value="Django">Django</option><option value="Electron">Electron</option><option value="Express">Express</option><option value="Flask">Flask</option><option value="MySQL)">MySQL)</option><option value="Next.js">Next.js</option><option value="Node-RED">Node-RED</option><option value="Node.js">Node.js</option><option value="Prisma">Prisma</option><option value="Python">Python</option><option value="Static HTML">Static HTML</option><option value="Tailwind">Tailwind</option><option value="Three.js">Three.js</option><option value="Vite">Vite</option><option value="XAMPP (Apache">XAMPP (Apache</option><option value="pywebview">pywebview</option>
     </select>
+    <button class="btn-pill cat-ALL active" data-cat="">All · 55</button>
+    <button class="btn-pill cat-LIVE"     data-cat="LIVE">🟢 LIVE · 27</button>
+    <button class="btn-pill cat-DEMO"     data-cat="DEMO">🎬 DEMO · 19</button>
+    <button class="btn-pill cat-DOWNLOAD" data-cat="DOWNLOAD">💾 DOWNLOAD · 7</button>
+    <button class="btn-pill cat-VENDOR"   data-cat="VENDOR">🌐 VENDOR · 2</button>
+    <button class="btn-pill" id="fav-toggle">☆ Favorites</button>
   </div>
 </header>
 
-<div class="banner">
-  <strong>Laurence's project registry.</strong>
-  Every card links to live source, a runnable build, or a download.
-  Source: <a href="https://github.com/lozturner/laurence-localhost-v2" target="_blank" rel="noopener">github.com/lozturner/laurence-localhost-v2</a>.
-</div>
-
-<div class="stats-bar">
-  <div class="stat"><span class="stat-value">55</span> Projects</div>
-  <div class="stat"><span class="stat-value">17</span> Frameworks</div>
-  <div class="stat"><span class="stat-value mirrored">55</span> With Thumbnails</div>
-  <div class="stat"><span class="stat-value" style="color:var(--accent)">55</span> On GitHub</div>
-  <div class="stat"><span class="stat-value" style="color:var(--success)">27</span> Run in Browser</div>
+<div class="stats">
+  <div class="stat"><strong>55</strong>Projects</div>
+  <div class="stat live"><strong>27</strong>Run live</div>
+  <div class="stat demo"><strong>19</strong>Demo via screenshot</div>
+  <div class="stat dl"><strong>7</strong>Download only</div>
+  <div class="stat ven"><strong>2</strong>Vendor redirect</div>
 </div>
 
 <main id="grid">
 
-    <article class="card" data-name="ai whack" data-framework="Static HTML">
+    <article class="card" data-id="299317e3f870" data-name="ai whack" data-framework="Static HTML" data-category="DEMO">
       <div class="card-thumb">
         <img src="thumbnails/299317e3f870.png" alt="Ai Whack" loading="lazy">
         <div class="framework-icon" title="Static HTML">H</div>
-        <div class="status-dot" title="Read-only mirror"></div>
+        <div class="category-badge" style="background:#f59e0b22;border-color:#f59e0b66;color:#f59e0b">🎬 DEMO</div>
+        <button class="fav-btn" data-fav="299317e3f870" title="Bookmark">☆</button>
       </div>
       <div class="card-body">
         <div class="card-badges">
           <span class="badge badge-static">Static HTML</span>
           <span class="badge badge-port">:3001</span>
-          
         </div>
         <div class="card-name">Ai Whack</div>
         <div class="card-desc">Static HTML app</div>
       </div>
-      <div class="recovery-panel">
-        <div class="recovery-btns">
-          <a class="recovery-run desktop" href="https://github.com/lozturner/laurence-lenz/archive/HEAD.zip" title="Download source ZIP">▶ Run</a>
-          <a class="recovery-source" href="https://github.com/lozturner/laurence-lenz" target="_blank" rel="noopener" title="Open repo on GitHub">🐙 Source</a>
-          <button class="recovery-clone" onclick="copyClone('https://github.com/lozturner/laurence-lenz.git', event)" title="Copy git clone command">📋</button>
-        </div>
+      <div class="card-footer">
+        <a class="play-btn" href="#" data-demo="299317e3f870" data-name="Ai Whack" data-framework="Static HTML" data-category="DEMO" data-thumb="thumbnails/299317e3f870.png" data-desc="Static HTML app" data-install="Static HTML — clone and open `index.html`" data-repo="https://github.com/lozturner/laurence-lenz">▶ Play</a>
+        <a class="source-btn" href="https://github.com/lozturner/laurence-lenz" target="_blank" rel="noopener" title="View source on GitHub">🐙</a>
       </div>
     </article>
 
-    <article class="card" data-name="ai whack" data-framework="Next.js + Prisma + Tailwind">
+    <article class="card" data-id="50a45d7530d0" data-name="ai whack" data-framework="Next.js + Prisma + Tailwind" data-category="DEMO">
       <div class="card-thumb">
         <img src="thumbnails/50a45d7530d0.png" alt="Ai Whack" loading="lazy">
         <div class="framework-icon" title="Next.js + Prisma + Tailwind">N</div>
-        <div class="status-dot" title="Read-only mirror"></div>
+        <div class="category-badge" style="background:#f59e0b22;border-color:#f59e0b66;color:#f59e0b">🎬 DEMO</div>
+        <button class="fav-btn" data-fav="50a45d7530d0" title="Bookmark">☆</button>
       </div>
       <div class="card-body">
         <div class="card-badges">
           <span class="badge badge-nextjs">Next.js + Prisma + Tailwind</span>
           <span class="badge badge-port">:3004</span>
-          <span class="badge badge-readme">README</span>
         </div>
         <div class="card-name">Ai Whack</div>
         <div class="card-desc">This is a Next.js project bootstrapped with create-next-app.</div>
       </div>
-      <div class="recovery-panel">
-        <div class="recovery-btns">
-          <a class="recovery-run node" href="https://github.com/lozturner/ai-whack" target="_blank" rel="noopener" title="Node/JS app — clone &amp; run locally per README">▶ Run</a>
-          <a class="recovery-source" href="https://github.com/lozturner/ai-whack" target="_blank" rel="noopener" title="Open repo on GitHub">🐙 Source</a>
-          <button class="recovery-clone" onclick="copyClone('https://github.com/lozturner/ai-whack.git', event)" title="Copy git clone command">📋</button>
-        </div>
+      <div class="card-footer">
+        <a class="play-btn" href="#" data-demo="50a45d7530d0" data-name="Ai Whack" data-framework="Next.js + Prisma + Tailwind" data-category="DEMO" data-thumb="thumbnails/50a45d7530d0.png" data-desc="This is a Next.js project bootstrapped with create-next-app." data-install="Next.js — clone, `npm install`, `npm run dev`" data-repo="https://github.com/lozturner/ai-whack">▶ Play</a>
+        <a class="source-btn" href="https://github.com/lozturner/ai-whack" target="_blank" rel="noopener" title="View source on GitHub">🐙</a>
       </div>
     </article>
 
-    <article class="card" data-name="alexa puck" data-framework="Python + pywebview">
+    <article class="card" data-id="1765cdfe59f4" data-name="alexa puck" data-framework="Python + pywebview" data-category="DEMO">
       <div class="card-thumb">
         <img src="thumbnails/1765cdfe59f4.png" alt="Alexa Puck" loading="lazy">
         <div class="framework-icon" title="Python + pywebview">Py</div>
-        <div class="status-dot" title="Read-only mirror"></div>
+        <div class="category-badge" style="background:#f59e0b22;border-color:#f59e0b66;color:#f59e0b">🎬 DEMO</div>
+        <button class="fav-btn" data-fav="1765cdfe59f4" title="Bookmark">☆</button>
       </div>
       <div class="card-body">
         <div class="card-badges">
           <span class="badge badge-python">Python + pywebview</span>
-          
           
         </div>
         <div class="card-name">Alexa Puck</div>
         <div class="card-desc">Python + pywebview project in alexa-puck</div>
       </div>
-      <div class="recovery-panel">
-        <div class="recovery-btns">
-          <a class="recovery-run replit" href="https://replit.com/github/lozturner/alexa-puck" target="_blank" rel="noopener" title="Opens a Python sandbox on Replit to fork &amp; run">▶ Run</a>
-          <a class="recovery-source" href="https://github.com/lozturner/alexa-puck" target="_blank" rel="noopener" title="Open repo on GitHub">🐙 Source</a>
-          <button class="recovery-clone" onclick="copyClone('https://github.com/lozturner/alexa-puck.git', event)" title="Copy git clone command">📋</button>
-        </div>
+      <div class="card-footer">
+        <a class="play-btn" href="#" data-demo="1765cdfe59f4" data-name="Alexa Puck" data-framework="Python + pywebview" data-category="DEMO" data-thumb="thumbnails/1765cdfe59f4.png" data-desc="Python + pywebview project in alexa-puck" data-install="Python — clone, then `python main.py`" data-repo="https://github.com/lozturner/alexa-puck">▶ Play</a>
+        <a class="source-btn" href="https://github.com/lozturner/alexa-puck" target="_blank" rel="noopener" title="View source on GitHub">🐙</a>
       </div>
     </article>
 
-    <article class="card" data-name="binman" data-framework="Electron">
+    <article class="card" data-id="e78c9c6b9cbb" data-name="binman" data-framework="Electron" data-category="DOWNLOAD">
       <div class="card-thumb">
         <img src="thumbnails/e78c9c6b9cbb.png" alt="Binman" loading="lazy">
         <div class="framework-icon" title="Electron">E</div>
-        <div class="status-dot" title="Read-only mirror"></div>
+        <div class="category-badge" style="background:#94a3b822;border-color:#94a3b866;color:#94a3b8">💾 DOWNLOAD</div>
+        <button class="fav-btn" data-fav="e78c9c6b9cbb" title="Bookmark">☆</button>
       </div>
       <div class="card-body">
         <div class="card-badges">
           <span class="badge badge-electron">Electron</span>
           
-          <span class="badge badge-electron">Desktop</span>
         </div>
         <div class="card-name">Binman</div>
         <div class="card-desc">Mike the Bin Man — Voice session logger &amp; feedback recorder</div>
       </div>
-      <div class="recovery-panel">
-        <div class="recovery-btns">
-          <a class="recovery-run desktop" href="https://github.com/lozturner/binman/archive/HEAD.zip" title="Desktop app — downloads the source ZIP to run locally">▶ Run</a>
-          <a class="recovery-source" href="https://github.com/lozturner/binman/blob/HEAD/main.js" target="_blank" rel="noopener" title="Open main.js on GitHub">🐙 Source</a>
-          <button class="recovery-clone" onclick="copyClone('https://github.com/lozturner/binman.git', event)" title="Copy git clone command">📋</button>
-        </div>
+      <div class="card-footer">
+        <a class="play-btn" href="https://github.com/lozturner/binman/archive/HEAD.zip" target="_blank" rel="noopener" data-name="Binman" data-framework="Electron" data-category="DOWNLOAD" data-thumb="thumbnails/e78c9c6b9cbb.png" data-desc="Mike the Bin Man — Voice session logger &amp; feedback recorder" data-install="Desktop app — clone, then `npm install &amp;&amp; npm start`" data-repo="https://github.com/lozturner/binman">▶ Play</a>
+        <a class="source-btn" href="https://github.com/lozturner/binman" target="_blank" rel="noopener" title="View source on GitHub">🐙</a>
       </div>
     </article>
 
-    <article class="card" data-name="brain sim" data-framework="Vite + Three.js">
+    <article class="card" data-id="f63c46ce3227" data-name="brain sim" data-framework="Vite + Three.js" data-category="LIVE">
       <div class="card-thumb">
         <img src="thumbnails/f63c46ce3227.png" alt="Brain Sim" loading="lazy">
         <div class="framework-icon" title="Vite + Three.js">V</div>
-        <div class="status-dot" title="Read-only mirror"></div>
+        <div class="category-badge" style="background:#22c55e22;border-color:#22c55e66;color:#22c55e">🟢 LIVE</div>
+        <button class="fav-btn" data-fav="f63c46ce3227" title="Bookmark">☆</button>
       </div>
       <div class="card-body">
         <div class="card-badges">
           <span class="badge badge-vite">Vite + Three.js</span>
           <span class="badge badge-port">:5174</span>
-          
         </div>
         <div class="card-name">Brain Sim</div>
         <div class="card-desc">Vite + Three.js project with 3D visualization</div>
       </div>
-      <div class="recovery-panel">
-        <div class="recovery-btns">
-          <a class="recovery-run" href="https://lozturner.github.io/brain-sim/" target="_blank" rel="noopener" title="Opens live at https://lozturner.github.io/brain-sim/">▶ Run</a>
-          <a class="recovery-source" href="https://github.com/lozturner/brain-sim/blob/HEAD/src/main.js" target="_blank" rel="noopener" title="Open src/main.js on GitHub">🐙 Source</a>
-          <button class="recovery-clone" onclick="copyClone('https://github.com/lozturner/brain-sim.git', event)" title="Copy git clone command">📋</button>
-        </div>
+      <div class="card-footer">
+        <a class="play-btn" href="https://lozturner.github.io/brain-sim/" target="_blank" rel="noopener" data-name="Brain Sim" data-framework="Vite + Three.js" data-category="LIVE" data-thumb="thumbnails/f63c46ce3227.png" data-desc="Vite + Three.js project with 3D visualization" data-install="Vite — clone, `npm install`, `npm run dev`" data-repo="https://github.com/lozturner/brain-sim">▶ Play</a>
+        <a class="source-btn" href="https://github.com/lozturner/brain-sim" target="_blank" rel="noopener" title="View source on GitHub">🐙</a>
       </div>
     </article>
 
-    <article class="card" data-name="circuit" data-framework="Python">
+    <article class="card" data-id="a2b805b626b8" data-name="circuit" data-framework="Python" data-category="LIVE">
       <div class="card-thumb">
         <img src="thumbnails/a2b805b626b8.png" alt="Circuit" loading="lazy">
         <div class="framework-icon" title="Python">Py</div>
-        <div class="status-dot" title="Read-only mirror"></div>
+        <div class="category-badge" style="background:#22c55e22;border-color:#22c55e66;color:#22c55e">🟢 LIVE</div>
+        <button class="fav-btn" data-fav="a2b805b626b8" title="Bookmark">☆</button>
       </div>
       <div class="card-body">
         <div class="card-badges">
           <span class="badge badge-python">Python</span>
           <span class="badge badge-port">:8771</span>
-          
         </div>
         <div class="card-name">Circuit</div>
         <div class="card-desc">Python app</div>
       </div>
-      <div class="recovery-panel">
-        <div class="recovery-btns">
-          <a class="recovery-run" href="https://lozturner.github.io/laurence-bring/" target="_blank" rel="noopener" title="Opens live at https://lozturner.github.io/laurence-bring/">▶ Run</a>
-          <a class="recovery-source" href="https://github.com/lozturner/laurence-bring" target="_blank" rel="noopener" title="Open repo on GitHub">🐙 Source</a>
-          <button class="recovery-clone" onclick="copyClone('https://github.com/lozturner/laurence-bring.git', event)" title="Copy git clone command">📋</button>
-        </div>
+      <div class="card-footer">
+        <a class="play-btn" href="https://lozturner.github.io/laurence-bring/" target="_blank" rel="noopener" data-name="Circuit" data-framework="Python" data-category="LIVE" data-thumb="thumbnails/a2b805b626b8.png" data-desc="Python app" data-install="Python — clone, then `python -m http.server 8771`" data-repo="https://github.com/lozturner/laurence-bring">▶ Play</a>
+        <a class="source-btn" href="https://github.com/lozturner/laurence-bring" target="_blank" rel="noopener" title="View source on GitHub">🐙</a>
       </div>
     </article>
 
-    <article class="card" data-name="claude everywhere" data-framework="Python">
+    <article class="card" data-id="ed8e198c975a" data-name="claude everywhere" data-framework="Python" data-category="LIVE">
       <div class="card-thumb">
         <img src="thumbnails/ed8e198c975a.png" alt="Claude Everywhere" loading="lazy">
         <div class="framework-icon" title="Python">Py</div>
-        <div class="status-dot" title="Read-only mirror"></div>
+        <div class="category-badge" style="background:#22c55e22;border-color:#22c55e66;color:#22c55e">🟢 LIVE</div>
+        <button class="fav-btn" data-fav="ed8e198c975a" title="Bookmark">☆</button>
       </div>
       <div class="card-body">
         <div class="card-badges">
           <span class="badge badge-python">Python</span>
           <span class="badge badge-port">:8772</span>
-          
         </div>
         <div class="card-name">Claude Everywhere</div>
         <div class="card-desc">Python app</div>
       </div>
-      <div class="recovery-panel">
-        <div class="recovery-btns">
-          <a class="recovery-run" href="https://lozturner.github.io/laurence-bring/" target="_blank" rel="noopener" title="Opens live at https://lozturner.github.io/laurence-bring/">▶ Run</a>
-          <a class="recovery-source" href="https://github.com/lozturner/laurence-bring" target="_blank" rel="noopener" title="Open repo on GitHub">🐙 Source</a>
-          <button class="recovery-clone" onclick="copyClone('https://github.com/lozturner/laurence-bring.git', event)" title="Copy git clone command">📋</button>
-        </div>
+      <div class="card-footer">
+        <a class="play-btn" href="https://lozturner.github.io/laurence-bring/" target="_blank" rel="noopener" data-name="Claude Everywhere" data-framework="Python" data-category="LIVE" data-thumb="thumbnails/ed8e198c975a.png" data-desc="Python app" data-install="Python — clone, then `python -m http.server 8772 --directory C:\Users\123\Desktop\claude-everywhere`" data-repo="https://github.com/lozturner/laurence-bring">▶ Play</a>
+        <a class="source-btn" href="https://github.com/lozturner/laurence-bring" target="_blank" rel="noopener" title="View source on GitHub">🐙</a>
       </div>
     </article>
 
-    <article class="card" data-name="claude home hub" data-framework="Electron">
+    <article class="card" data-id="3743c4a86158" data-name="claude home hub" data-framework="Electron" data-category="DOWNLOAD">
       <div class="card-thumb">
         <img src="thumbnails/3743c4a86158.png" alt="Claude Home Hub" loading="lazy">
         <div class="framework-icon" title="Electron">E</div>
-        <div class="status-dot" title="Read-only mirror"></div>
+        <div class="category-badge" style="background:#94a3b822;border-color:#94a3b866;color:#94a3b8">💾 DOWNLOAD</div>
+        <button class="fav-btn" data-fav="3743c4a86158" title="Bookmark">☆</button>
       </div>
       <div class="card-body">
         <div class="card-badges">
           <span class="badge badge-electron">Electron</span>
           
-          <span class="badge badge-electron">Desktop</span>
         </div>
         <div class="card-name">Claude Home Hub</div>
         <div class="card-desc">Voice-activated home hub — Windows System.Speech, 100% local, no API keys</div>
       </div>
-      <div class="recovery-panel">
-        <div class="recovery-btns">
-          <a class="recovery-run desktop" href="https://github.com/lozturner/claude-home-hub/archive/HEAD.zip" title="Desktop app — downloads the source ZIP to run locally">▶ Run</a>
-          <a class="recovery-source" href="https://github.com/lozturner/claude-home-hub/blob/HEAD/main.js" target="_blank" rel="noopener" title="Open main.js on GitHub">🐙 Source</a>
-          <button class="recovery-clone" onclick="copyClone('https://github.com/lozturner/claude-home-hub.git', event)" title="Copy git clone command">📋</button>
-        </div>
+      <div class="card-footer">
+        <a class="play-btn" href="https://github.com/lozturner/claude-home-hub/archive/HEAD.zip" target="_blank" rel="noopener" data-name="Claude Home Hub" data-framework="Electron" data-category="DOWNLOAD" data-thumb="thumbnails/3743c4a86158.png" data-desc="Voice-activated home hub — Windows System.Speech, 100% local, no API keys" data-install="Desktop app — clone, then `npm install &amp;&amp; npm start`" data-repo="https://github.com/lozturner/claude-home-hub">▶ Play</a>
+        <a class="source-btn" href="https://github.com/lozturner/claude-home-hub" target="_blank" rel="noopener" title="View source on GitHub">🐙</a>
       </div>
     </article>
 
-    <article class="card" data-name="claude v1" data-framework="Electron">
+    <article class="card" data-id="436af4c783eb" data-name="claude v1" data-framework="Electron" data-category="DOWNLOAD">
       <div class="card-thumb">
         <img src="thumbnails/436af4c783eb.png" alt="Claude V1" loading="lazy">
         <div class="framework-icon" title="Electron">E</div>
-        <div class="status-dot" title="Read-only mirror"></div>
+        <div class="category-badge" style="background:#94a3b822;border-color:#94a3b866;color:#94a3b8">💾 DOWNLOAD</div>
+        <button class="fav-btn" data-fav="436af4c783eb" title="Bookmark">☆</button>
       </div>
       <div class="card-body">
         <div class="card-badges">
           <span class="badge badge-electron">Electron</span>
           
-          <span class="badge badge-electron">Desktop</span>
         </div>
         <div class="card-name">Claude V1</div>
         <div class="card-desc">Claude v1 — Voice in, suggestions out, human in the loop</div>
       </div>
-      <div class="recovery-panel">
-        <div class="recovery-btns">
-          <a class="recovery-run desktop" href="https://github.com/lozturner/claude-v1/archive/HEAD.zip" title="Desktop app — downloads the source ZIP to run locally">▶ Run</a>
-          <a class="recovery-source" href="https://github.com/lozturner/claude-v1/blob/HEAD/main.js" target="_blank" rel="noopener" title="Open main.js on GitHub">🐙 Source</a>
-          <button class="recovery-clone" onclick="copyClone('https://github.com/lozturner/claude-v1.git', event)" title="Copy git clone command">📋</button>
-        </div>
+      <div class="card-footer">
+        <a class="play-btn" href="https://github.com/lozturner/claude-v1/archive/HEAD.zip" target="_blank" rel="noopener" data-name="Claude V1" data-framework="Electron" data-category="DOWNLOAD" data-thumb="thumbnails/436af4c783eb.png" data-desc="Claude v1 — Voice in, suggestions out, human in the loop" data-install="Desktop app — clone, then `npm install &amp;&amp; npm start`" data-repo="https://github.com/lozturner/claude-v1">▶ Play</a>
+        <a class="source-btn" href="https://github.com/lozturner/claude-v1" target="_blank" rel="noopener" title="View source on GitHub">🐙</a>
       </div>
     </article>
 
-    <article class="card" data-name="desktop" data-framework="Python">
+    <article class="card" data-id="b8dbc61a46f2" data-name="desktop" data-framework="Python" data-category="LIVE">
       <div class="card-thumb">
         <img src="thumbnails/b8dbc61a46f2.png" alt="Desktop" loading="lazy">
         <div class="framework-icon" title="Python">Py</div>
-        <div class="status-dot" title="Read-only mirror"></div>
+        <div class="category-badge" style="background:#22c55e22;border-color:#22c55e66;color:#22c55e">🟢 LIVE</div>
+        <button class="fav-btn" data-fav="b8dbc61a46f2" title="Bookmark">☆</button>
       </div>
       <div class="card-body">
         <div class="card-badges">
           <span class="badge badge-python">Python</span>
           <span class="badge badge-port">:8770</span>
-          
         </div>
         <div class="card-name">Desktop</div>
         <div class="card-desc">Python app</div>
       </div>
-      <div class="recovery-panel">
-        <div class="recovery-btns">
-          <a class="recovery-run" href="https://lozturner.github.io/laurence-bring/" target="_blank" rel="noopener" title="Opens live at https://lozturner.github.io/laurence-bring/">▶ Run</a>
-          <a class="recovery-source" href="https://github.com/lozturner/laurence-bring" target="_blank" rel="noopener" title="Open repo on GitHub">🐙 Source</a>
-          <button class="recovery-clone" onclick="copyClone('https://github.com/lozturner/laurence-bring.git', event)" title="Copy git clone command">📋</button>
-        </div>
+      <div class="card-footer">
+        <a class="play-btn" href="https://lozturner.github.io/laurence-bring/" target="_blank" rel="noopener" data-name="Desktop" data-framework="Python" data-category="LIVE" data-thumb="thumbnails/b8dbc61a46f2.png" data-desc="Python app" data-install="Python — clone, then `python -m http.server 8770`" data-repo="https://github.com/lozturner/laurence-bring">▶ Play</a>
+        <a class="source-btn" href="https://github.com/lozturner/laurence-bring" target="_blank" rel="noopener" title="View source on GitHub">🐙</a>
       </div>
     </article>
 
-    <article class="card" data-name="donner pad" data-framework="Electron">
+    <article class="card" data-id="66cb2d8d8cf2" data-name="donner pad" data-framework="Electron" data-category="LIVE">
       <div class="card-thumb">
         <img src="thumbnails/66cb2d8d8cf2.png" alt="Donner Pad" loading="lazy">
         <div class="framework-icon" title="Electron">E</div>
-        <div class="status-dot" title="Read-only mirror"></div>
+        <div class="category-badge" style="background:#22c55e22;border-color:#22c55e66;color:#22c55e">🟢 LIVE</div>
+        <button class="fav-btn" data-fav="66cb2d8d8cf2" title="Bookmark">☆</button>
       </div>
       <div class="card-body">
         <div class="card-badges">
           <span class="badge badge-electron">Electron</span>
           
-          <span class="badge badge-electron">Desktop</span>
         </div>
         <div class="card-name">Donner Pad</div>
         <div class="card-desc">Digital StarryPad — Donner MIDI pad controller clone for desktop automation</div>
       </div>
-      <div class="recovery-panel">
-        <div class="recovery-btns">
-          <a class="recovery-run" href="https://lozturner.github.io/donner-pad/" target="_blank" rel="noopener" title="Opens live at https://lozturner.github.io/donner-pad/">▶ Run</a>
-          <a class="recovery-source" href="https://github.com/lozturner/donner-pad/blob/HEAD/main.js" target="_blank" rel="noopener" title="Open main.js on GitHub">🐙 Source</a>
-          <button class="recovery-clone" onclick="copyClone('https://github.com/lozturner/donner-pad.git', event)" title="Copy git clone command">📋</button>
-        </div>
+      <div class="card-footer">
+        <a class="play-btn" href="https://lozturner.github.io/donner-pad/" target="_blank" rel="noopener" data-name="Donner Pad" data-framework="Electron" data-category="LIVE" data-thumb="thumbnails/66cb2d8d8cf2.png" data-desc="Digital StarryPad — Donner MIDI pad controller clone for desktop automation" data-install="Desktop app — clone, then `npm install &amp;&amp; npm start`" data-repo="https://github.com/lozturner/donner-pad">▶ Play</a>
+        <a class="source-btn" href="https://github.com/lozturner/donner-pad" target="_blank" rel="noopener" title="View source on GitHub">🐙</a>
       </div>
     </article>
 
-    <article class="card" data-name="fos" data-framework="Python">
+    <article class="card" data-id="26c6425c1112" data-name="fos" data-framework="Python" data-category="LIVE">
       <div class="card-thumb">
         <img src="thumbnails/26c6425c1112.png" alt="Fos" loading="lazy">
         <div class="framework-icon" title="Python">Py</div>
-        <div class="status-dot" title="Read-only mirror"></div>
+        <div class="category-badge" style="background:#22c55e22;border-color:#22c55e66;color:#22c55e">🟢 LIVE</div>
+        <button class="fav-btn" data-fav="26c6425c1112" title="Bookmark">☆</button>
       </div>
       <div class="card-body">
         <div class="card-badges">
           <span class="badge badge-python">Python</span>
           <span class="badge badge-port">:8768</span>
-          
         </div>
         <div class="card-name">Fos</div>
         <div class="card-desc">Python app</div>
       </div>
-      <div class="recovery-panel">
-        <div class="recovery-btns">
-          <a class="recovery-run" href="https://lozturner.github.io/laurence-bring/fos.html" target="_blank" rel="noopener" title="Opens live at https://lozturner.github.io/laurence-bring/fos.html">▶ Run</a>
-          <a class="recovery-source" href="https://github.com/lozturner/laurence-bring/blob/HEAD/fos.html" target="_blank" rel="noopener" title="Open fos.html on GitHub">🐙 Source</a>
-          <button class="recovery-clone" onclick="copyClone('https://github.com/lozturner/laurence-bring.git', event)" title="Copy git clone command">📋</button>
-        </div>
+      <div class="card-footer">
+        <a class="play-btn" href="https://lozturner.github.io/laurence-bring/fos.html" target="_blank" rel="noopener" data-name="Fos" data-framework="Python" data-category="LIVE" data-thumb="thumbnails/26c6425c1112.png" data-desc="Python app" data-install="Python — clone, then `python -m http.server 8768`" data-repo="https://github.com/lozturner/laurence-bring">▶ Play</a>
+        <a class="source-btn" href="https://github.com/lozturner/laurence-bring" target="_blank" rel="noopener" title="View source on GitHub">🐙</a>
       </div>
     </article>
 
-    <article class="card" data-name="gpt computer assistant" data-framework="Python">
+    <article class="card" data-id="ad89bc41808a" data-name="gpt computer assistant" data-framework="Python" data-category="DEMO">
       <div class="card-thumb">
         <img src="thumbnails/ad89bc41808a.png" alt="Gpt Computer Assistant" loading="lazy">
         <div class="framework-icon" title="Python">Py</div>
-        <div class="status-dot" title="Read-only mirror"></div>
+        <div class="category-badge" style="background:#f59e0b22;border-color:#f59e0b66;color:#f59e0b">🎬 DEMO</div>
+        <button class="fav-btn" data-fav="ad89bc41808a" title="Bookmark">☆</button>
       </div>
       <div class="card-body">
         <div class="card-badges">
           <span class="badge badge-python">Python</span>
           
-          <span class="badge badge-readme">README</span>
         </div>
         <div class="card-name">Gpt Computer Assistant</div>
         <div class="card-desc"></div>
       </div>
-      <div class="recovery-panel">
-        <div class="recovery-btns">
-          <a class="recovery-run replit" href="https://replit.com/github/lozturner/gpt-computer-assistant" target="_blank" rel="noopener" title="Opens a Python sandbox on Replit to fork &amp; run">▶ Run</a>
-          <a class="recovery-source" href="https://github.com/onuratakan/gpt-computer-assistant/blob/HEAD/run.py" target="_blank" rel="noopener" title="Open run.py on GitHub">🐙 Source</a>
-          <button class="recovery-clone" onclick="copyClone('https://github.com/onuratakan/gpt-computer-assistant.git', event)" title="Copy git clone command">📋</button>
-        </div>
+      <div class="card-footer">
+        <a class="play-btn" href="#" data-demo="ad89bc41808a" data-name="Gpt Computer Assistant" data-framework="Python" data-category="DEMO" data-thumb="thumbnails/ad89bc41808a.png" data-desc="" data-install="Python — clone, then `python run.py`" data-repo="https://github.com/onuratakan/gpt-computer-assistant">▶ Play</a>
+        <a class="source-btn" href="https://github.com/onuratakan/gpt-computer-assistant" target="_blank" rel="noopener" title="View source on GitHub">🐙</a>
       </div>
     </article>
 
-    <article class="card" data-name="html editor" data-framework="Express">
+    <article class="card" data-id="440da9d07555" data-name="html editor" data-framework="Express" data-category="DOWNLOAD">
       <div class="card-thumb">
         <img src="thumbnails/440da9d07555.png" alt="Html Editor" loading="lazy">
         <div class="framework-icon" title="Express">Ex</div>
-        <div class="status-dot" title="Read-only mirror"></div>
+        <div class="category-badge" style="background:#94a3b822;border-color:#94a3b866;color:#94a3b8">💾 DOWNLOAD</div>
+        <button class="fav-btn" data-fav="440da9d07555" title="Bookmark">☆</button>
       </div>
       <div class="card-body">
         <div class="card-badges">
           <span class="badge badge-express">Express</span>
           <span class="badge badge-port">:3008</span>
-          
         </div>
         <div class="card-name">Html Editor</div>
         <div class="card-desc">Express project in html-editor</div>
       </div>
-      <div class="recovery-panel">
-        <div class="recovery-btns">
-          <a class="recovery-run node" href="https://github.com/lozturner/html-editor" target="_blank" rel="noopener" title="Node/JS app — clone &amp; run locally per README">▶ Run</a>
-          <a class="recovery-source" href="https://github.com/lozturner/html-editor/blob/HEAD/server.js" target="_blank" rel="noopener" title="Open server.js on GitHub">🐙 Source</a>
-          <button class="recovery-clone" onclick="copyClone('https://github.com/lozturner/html-editor.git', event)" title="Copy git clone command">📋</button>
-        </div>
+      <div class="card-footer">
+        <a class="play-btn" href="https://github.com/lozturner/html-editor/archive/HEAD.zip" target="_blank" rel="noopener" data-name="Html Editor" data-framework="Express" data-category="DOWNLOAD" data-thumb="thumbnails/440da9d07555.png" data-desc="Express project in html-editor" data-install="Node server — clone, `npm install`, `npm start`" data-repo="https://github.com/lozturner/html-editor">▶ Play</a>
+        <a class="source-btn" href="https://github.com/lozturner/html-editor" target="_blank" rel="noopener" title="View source on GitHub">🐙</a>
       </div>
     </article>
 
-    <article class="card" data-name="image resolver" data-framework="Python">
+    <article class="card" data-id="3724fbccd32a" data-name="image resolver" data-framework="Python" data-category="LIVE">
       <div class="card-thumb">
         <img src="thumbnails/3724fbccd32a.png" alt="Image Resolver" loading="lazy">
         <div class="framework-icon" title="Python">Py</div>
-        <div class="status-dot" title="Read-only mirror"></div>
+        <div class="category-badge" style="background:#22c55e22;border-color:#22c55e66;color:#22c55e">🟢 LIVE</div>
+        <button class="fav-btn" data-fav="3724fbccd32a" title="Bookmark">☆</button>
       </div>
       <div class="card-body">
         <div class="card-badges">
           <span class="badge badge-python">Python</span>
           <span class="badge badge-port">:8774</span>
-          
         </div>
         <div class="card-name">Image Resolver</div>
         <div class="card-desc">Python app</div>
       </div>
-      <div class="recovery-panel">
-        <div class="recovery-btns">
-          <a class="recovery-run" href="https://lozturner.github.io/laurence-bring/" target="_blank" rel="noopener" title="Opens live at https://lozturner.github.io/laurence-bring/">▶ Run</a>
-          <a class="recovery-source" href="https://github.com/lozturner/laurence-bring/blob/HEAD/image-resolver.py" target="_blank" rel="noopener" title="Open image-resolver.py on GitHub">🐙 Source</a>
-          <button class="recovery-clone" onclick="copyClone('https://github.com/lozturner/laurence-bring.git', event)" title="Copy git clone command">📋</button>
-        </div>
+      <div class="card-footer">
+        <a class="play-btn" href="https://lozturner.github.io/laurence-bring/" target="_blank" rel="noopener" data-name="Image Resolver" data-framework="Python" data-category="LIVE" data-thumb="thumbnails/3724fbccd32a.png" data-desc="Python app" data-install="Python — clone, then `python image-resolver.py`" data-repo="https://github.com/lozturner/laurence-bring">▶ Play</a>
+        <a class="source-btn" href="https://github.com/lozturner/laurence-bring" target="_blank" rel="noopener" title="View source on GitHub">🐙</a>
       </div>
     </article>
 
-    <article class="card" data-name="laurence biz" data-framework="Static HTML">
+    <article class="card" data-id="a6594b96fd20" data-name="laurence biz" data-framework="Static HTML" data-category="DEMO">
       <div class="card-thumb">
         <img src="thumbnails/a6594b96fd20.png" alt="Laurence Biz" loading="lazy">
         <div class="framework-icon" title="Static HTML">H</div>
-        <div class="status-dot" title="Read-only mirror"></div>
+        <div class="category-badge" style="background:#f59e0b22;border-color:#f59e0b66;color:#f59e0b">🎬 DEMO</div>
+        <button class="fav-btn" data-fav="a6594b96fd20" title="Bookmark">☆</button>
       </div>
       <div class="card-body">
         <div class="card-badges">
           <span class="badge badge-static">Static HTML</span>
           <span class="badge badge-port">:3002</span>
-          
         </div>
         <div class="card-name">Laurence Biz</div>
         <div class="card-desc">Static HTML app</div>
       </div>
-      <div class="recovery-panel">
-        <div class="recovery-btns">
-          <a class="recovery-run desktop" href="https://github.com/lozturner/laurence-lenz/archive/HEAD.zip" title="Download source ZIP">▶ Run</a>
-          <a class="recovery-source" href="https://github.com/lozturner/laurence-lenz" target="_blank" rel="noopener" title="Open repo on GitHub">🐙 Source</a>
-          <button class="recovery-clone" onclick="copyClone('https://github.com/lozturner/laurence-lenz.git', event)" title="Copy git clone command">📋</button>
-        </div>
+      <div class="card-footer">
+        <a class="play-btn" href="#" data-demo="a6594b96fd20" data-name="Laurence Biz" data-framework="Static HTML" data-category="DEMO" data-thumb="thumbnails/a6594b96fd20.png" data-desc="Static HTML app" data-install="Static HTML — clone and open `index.html`" data-repo="https://github.com/lozturner/laurence-lenz">▶ Play</a>
+        <a class="source-btn" href="https://github.com/lozturner/laurence-lenz" target="_blank" rel="noopener" title="View source on GitHub">🐙</a>
       </div>
     </article>
 
-    <article class="card" data-name="laurence biz" data-framework="Next.js + Tailwind">
+    <article class="card" data-id="79769f52be13" data-name="laurence biz" data-framework="Next.js + Tailwind" data-category="LIVE">
       <div class="card-thumb">
         <img src="thumbnails/79769f52be13.png" alt="Laurence Biz" loading="lazy">
         <div class="framework-icon" title="Next.js + Tailwind">N</div>
-        <div class="status-dot" title="Read-only mirror"></div>
+        <div class="category-badge" style="background:#22c55e22;border-color:#22c55e66;color:#22c55e">🟢 LIVE</div>
+        <button class="fav-btn" data-fav="79769f52be13" title="Bookmark">☆</button>
       </div>
       <div class="card-body">
         <div class="card-badges">
           <span class="badge badge-nextjs">Next.js + Tailwind</span>
           <span class="badge badge-port">:3003</span>
-          <span class="badge badge-readme">README</span>
         </div>
         <div class="card-name">Laurence Biz</div>
         <div class="card-desc">This is a Next.js project bootstrapped with create-next-app.</div>
       </div>
-      <div class="recovery-panel">
-        <div class="recovery-btns">
-          <a class="recovery-run" href="https://lozturner.github.io/mere-mortal/" target="_blank" rel="noopener" title="Opens live at https://lozturner.github.io/mere-mortal/">▶ Run</a>
-          <a class="recovery-source" href="https://github.com/lozturner/mere-mortal" target="_blank" rel="noopener" title="Open repo on GitHub">🐙 Source</a>
-          <button class="recovery-clone" onclick="copyClone('https://github.com/lozturner/mere-mortal.git', event)" title="Copy git clone command">📋</button>
-        </div>
+      <div class="card-footer">
+        <a class="play-btn" href="https://lozturner.github.io/mere-mortal/" target="_blank" rel="noopener" data-name="Laurence Biz" data-framework="Next.js + Tailwind" data-category="LIVE" data-thumb="thumbnails/79769f52be13.png" data-desc="This is a Next.js project bootstrapped with create-next-app." data-install="Next.js — clone, `npm install`, `npm run dev`" data-repo="https://github.com/lozturner/mere-mortal">▶ Play</a>
+        <a class="source-btn" href="https://github.com/lozturner/mere-mortal" target="_blank" rel="noopener" title="View source on GitHub">🐙</a>
       </div>
     </article>
 
-    <article class="card" data-name="laurence lens" data-framework="Static HTML">
+    <article class="card" data-id="d476f88a8dc2" data-name="laurence lens" data-framework="Static HTML" data-category="DEMO">
       <div class="card-thumb">
         <img src="thumbnails/d476f88a8dc2.png" alt="Laurence Lens" loading="lazy">
         <div class="framework-icon" title="Static HTML">H</div>
-        <div class="status-dot" title="Read-only mirror"></div>
+        <div class="category-badge" style="background:#f59e0b22;border-color:#f59e0b66;color:#f59e0b">🎬 DEMO</div>
+        <button class="fav-btn" data-fav="d476f88a8dc2" title="Bookmark">☆</button>
       </div>
       <div class="card-body">
         <div class="card-badges">
           <span class="badge badge-static">Static HTML</span>
           <span class="badge badge-port">:3000</span>
-          
         </div>
         <div class="card-name">Laurence Lens</div>
         <div class="card-desc">Static HTML app</div>
       </div>
-      <div class="recovery-panel">
-        <div class="recovery-btns">
-          <a class="recovery-run desktop" href="https://github.com/lozturner/laurence-lenz/archive/HEAD.zip" title="Download source ZIP">▶ Run</a>
-          <a class="recovery-source" href="https://github.com/lozturner/laurence-lenz/blob/HEAD/laurence-lens" target="_blank" rel="noopener" title="Open laurence-lens on GitHub">🐙 Source</a>
-          <button class="recovery-clone" onclick="copyClone('https://github.com/lozturner/laurence-lenz.git', event)" title="Copy git clone command">📋</button>
-        </div>
+      <div class="card-footer">
+        <a class="play-btn" href="#" data-demo="d476f88a8dc2" data-name="Laurence Lens" data-framework="Static HTML" data-category="DEMO" data-thumb="thumbnails/d476f88a8dc2.png" data-desc="Static HTML app" data-install="Static HTML — clone and open `index.html`" data-repo="https://github.com/lozturner/laurence-lenz">▶ Play</a>
+        <a class="source-btn" href="https://github.com/lozturner/laurence-lenz" target="_blank" rel="noopener" title="View source on GitHub">🐙</a>
       </div>
     </article>
 
-    <article class="card" data-name="laurence lens" data-framework="Next.js + Tailwind">
+    <article class="card" data-id="9d9fe816c2da" data-name="laurence lens" data-framework="Next.js + Tailwind" data-category="LIVE">
       <div class="card-thumb">
         <img src="thumbnails/9d9fe816c2da.png" alt="Laurence Lens" loading="lazy">
         <div class="framework-icon" title="Next.js + Tailwind">N</div>
-        <div class="status-dot" title="Read-only mirror"></div>
+        <div class="category-badge" style="background:#22c55e22;border-color:#22c55e66;color:#22c55e">🟢 LIVE</div>
+        <button class="fav-btn" data-fav="9d9fe816c2da" title="Bookmark">☆</button>
       </div>
       <div class="card-body">
         <div class="card-badges">
           <span class="badge badge-nextjs">Next.js + Tailwind</span>
           <span class="badge badge-port">:3005</span>
-          <span class="badge badge-readme">README</span>
         </div>
         <div class="card-name">Laurence Lens</div>
         <div class="card-desc">This is a Next.js project bootstrapped with create-next-app.</div>
       </div>
-      <div class="recovery-panel">
-        <div class="recovery-btns">
-          <a class="recovery-run" href="https://lozturner.github.io/laurence-lens/" target="_blank" rel="noopener" title="Opens live at https://lozturner.github.io/laurence-lens/">▶ Run</a>
-          <a class="recovery-source" href="https://github.com/lozturner/laurence-lens" target="_blank" rel="noopener" title="Open repo on GitHub">🐙 Source</a>
-          <button class="recovery-clone" onclick="copyClone('https://github.com/lozturner/laurence-lens.git', event)" title="Copy git clone command">📋</button>
-        </div>
+      <div class="card-footer">
+        <a class="play-btn" href="https://lozturner.github.io/laurence-lens/" target="_blank" rel="noopener" data-name="Laurence Lens" data-framework="Next.js + Tailwind" data-category="LIVE" data-thumb="thumbnails/9d9fe816c2da.png" data-desc="This is a Next.js project bootstrapped with create-next-app." data-install="Next.js — clone, `npm install`, `npm run dev`" data-repo="https://github.com/lozturner/laurence-lens">▶ Play</a>
+        <a class="source-btn" href="https://github.com/lozturner/laurence-lens" target="_blank" rel="noopener" title="View source on GitHub">🐙</a>
       </div>
     </article>
 
-    <article class="card" data-name="laurence voice control" data-framework="Python">
+    <article class="card" data-id="319d7df7c199" data-name="laurence voice control" data-framework="Python" data-category="DEMO">
       <div class="card-thumb">
         <img src="thumbnails/319d7df7c199.png" alt="Laurence Voice Control" loading="lazy">
         <div class="framework-icon" title="Python">Py</div>
-        <div class="status-dot" title="Read-only mirror"></div>
+        <div class="category-badge" style="background:#f59e0b22;border-color:#f59e0b66;color:#f59e0b">🎬 DEMO</div>
+        <button class="fav-btn" data-fav="319d7df7c199" title="Bookmark">☆</button>
       </div>
       <div class="card-body">
         <div class="card-badges">
           <span class="badge badge-python">Python</span>
-          
           
         </div>
         <div class="card-name">Laurence Voice Control</div>
         <div class="card-desc">Python project in Laurence voice control</div>
       </div>
-      <div class="recovery-panel">
-        <div class="recovery-btns">
-          <a class="recovery-run replit" href="https://replit.com/github/lozturner/laurence-voice-control" target="_blank" rel="noopener" title="Opens a Python sandbox on Replit to fork &amp; run">▶ Run</a>
-          <a class="recovery-source" href="https://github.com/lozturner/laurence-voice-control" target="_blank" rel="noopener" title="Open repo on GitHub">🐙 Source</a>
-          <button class="recovery-clone" onclick="copyClone('https://github.com/lozturner/laurence-voice-control.git', event)" title="Copy git clone command">📋</button>
-        </div>
+      <div class="card-footer">
+        <a class="play-btn" href="#" data-demo="319d7df7c199" data-name="Laurence Voice Control" data-framework="Python" data-category="DEMO" data-thumb="thumbnails/319d7df7c199.png" data-desc="Python project in Laurence voice control" data-install="Python — clone, then `python main.py`" data-repo="https://github.com/lozturner/laurence-voice-control">▶ Play</a>
+        <a class="source-btn" href="https://github.com/lozturner/laurence-voice-control" target="_blank" rel="noopener" title="View source on GitHub">🐙</a>
       </div>
     </article>
 
-    <article class="card" data-name="laurence watchers" data-framework="Static HTML">
+    <article class="card" data-id="eac0ef69712c" data-name="laurence watchers" data-framework="Static HTML" data-category="LIVE">
       <div class="card-thumb">
         <img src="thumbnails/eac0ef69712c.png" alt="Laurence Watchers" loading="lazy">
         <div class="framework-icon" title="Static HTML">H</div>
-        <div class="status-dot" title="Read-only mirror"></div>
+        <div class="category-badge" style="background:#22c55e22;border-color:#22c55e66;color:#22c55e">🟢 LIVE</div>
+        <button class="fav-btn" data-fav="eac0ef69712c" title="Bookmark">☆</button>
       </div>
       <div class="card-body">
         <div class="card-badges">
           <span class="badge badge-static">Static HTML</span>
           <span class="badge badge-port">:3998</span>
-          
         </div>
         <div class="card-name">Laurence Watchers</div>
         <div class="card-desc">Static HTML project in Laurence Watchers</div>
       </div>
-      <div class="recovery-panel">
-        <div class="recovery-btns">
-          <a class="recovery-run" href="https://lozturner.github.io/laurence-watchers/index.html" target="_blank" rel="noopener" title="Opens live at https://lozturner.github.io/laurence-watchers/index.html">▶ Run</a>
-          <a class="recovery-source" href="https://github.com/lozturner/laurence-watchers/blob/HEAD/index.html" target="_blank" rel="noopener" title="Open index.html on GitHub">🐙 Source</a>
-          <button class="recovery-clone" onclick="copyClone('https://github.com/lozturner/laurence-watchers.git', event)" title="Copy git clone command">📋</button>
-        </div>
+      <div class="card-footer">
+        <a class="play-btn" href="https://lozturner.github.io/laurence-watchers/index.html" target="_blank" rel="noopener" data-name="Laurence Watchers" data-framework="Static HTML" data-category="LIVE" data-thumb="thumbnails/eac0ef69712c.png" data-desc="Static HTML project in Laurence Watchers" data-install="Static HTML — clone and open `index.html`" data-repo="https://github.com/lozturner/laurence-watchers">▶ Play</a>
+        <a class="source-btn" href="https://github.com/lozturner/laurence-watchers" target="_blank" rel="noopener" title="View source on GitHub">🐙</a>
       </div>
     </article>
 
-    <article class="card" data-name="laurence windows chatbot" data-framework="Python + pywebview">
+    <article class="card" data-id="c707eea2f8cb" data-name="laurence windows chatbot" data-framework="Python + pywebview" data-category="DEMO">
       <div class="card-thumb">
         <img src="thumbnails/c707eea2f8cb.png" alt="Laurence Windows Chatbot" loading="lazy">
         <div class="framework-icon" title="Python + pywebview">Py</div>
-        <div class="status-dot" title="Read-only mirror"></div>
+        <div class="category-badge" style="background:#f59e0b22;border-color:#f59e0b66;color:#f59e0b">🎬 DEMO</div>
+        <button class="fav-btn" data-fav="c707eea2f8cb" title="Bookmark">☆</button>
       </div>
       <div class="card-body">
         <div class="card-badges">
           <span class="badge badge-python">Python + pywebview</span>
           <span class="badge badge-port">:8765</span>
-          
         </div>
         <div class="card-name">Laurence Windows Chatbot</div>
         <div class="card-desc">Python + pywebview project in laurence windows chatbot</div>
       </div>
-      <div class="recovery-panel">
-        <div class="recovery-btns">
-          <a class="recovery-run replit" href="https://replit.com/github/lozturner/laurence-windows-chatbot" target="_blank" rel="noopener" title="Opens a Python sandbox on Replit to fork &amp; run">▶ Run</a>
-          <a class="recovery-source" href="https://github.com/lozturner/laurence-windows-chatbot" target="_blank" rel="noopener" title="Open repo on GitHub">🐙 Source</a>
-          <button class="recovery-clone" onclick="copyClone('https://github.com/lozturner/laurence-windows-chatbot.git', event)" title="Copy git clone command">📋</button>
-        </div>
+      <div class="card-footer">
+        <a class="play-btn" href="#" data-demo="c707eea2f8cb" data-name="Laurence Windows Chatbot" data-framework="Python + pywebview" data-category="DEMO" data-thumb="thumbnails/c707eea2f8cb.png" data-desc="Python + pywebview project in laurence windows chatbot" data-install="Python — clone, then `python main.py`" data-repo="https://github.com/lozturner/laurence-windows-chatbot">▶ Play</a>
+        <a class="source-btn" href="https://github.com/lozturner/laurence-windows-chatbot" target="_blank" rel="noopener" title="View source on GitHub">🐙</a>
       </div>
     </article>
 
-    <article class="card" data-name="lawrencebeatyourselfup.com" data-framework="Static HTML">
+    <article class="card" data-id="22b7cbc1c765" data-name="lawrencebeatyourselfup.com" data-framework="Static HTML" data-category="LIVE">
       <div class="card-thumb">
         <img src="thumbnails/22b7cbc1c765.png" alt="LawrenceBeatYourselfUp.Com" loading="lazy">
         <div class="framework-icon" title="Static HTML">H</div>
-        <div class="status-dot" title="Read-only mirror"></div>
+        <div class="category-badge" style="background:#22c55e22;border-color:#22c55e66;color:#22c55e">🟢 LIVE</div>
+        <button class="fav-btn" data-fav="22b7cbc1c765" title="Bookmark">☆</button>
       </div>
       <div class="card-body">
         <div class="card-badges">
           <span class="badge badge-static">Static HTML</span>
           <span class="badge badge-port">:8080</span>
-          
         </div>
         <div class="card-name">LawrenceBeatYourselfUp.Com</div>
         <div class="card-desc">Static HTML project in LawrenceBeatYourselfUp.com</div>
       </div>
-      <div class="recovery-panel">
-        <div class="recovery-btns">
-          <a class="recovery-run" href="https://lozturner.github.io/beatyourselfup/index.html" target="_blank" rel="noopener" title="Opens live at https://lozturner.github.io/beatyourselfup/index.html">▶ Run</a>
-          <a class="recovery-source" href="https://github.com/lozturner/beatyourselfup/blob/HEAD/index.html" target="_blank" rel="noopener" title="Open index.html on GitHub">🐙 Source</a>
-          <button class="recovery-clone" onclick="copyClone('https://github.com/lozturner/beatyourselfup.git', event)" title="Copy git clone command">📋</button>
-        </div>
+      <div class="card-footer">
+        <a class="play-btn" href="https://lozturner.github.io/beatyourselfup/index.html" target="_blank" rel="noopener" data-name="LawrenceBeatYourselfUp.Com" data-framework="Static HTML" data-category="LIVE" data-thumb="thumbnails/22b7cbc1c765.png" data-desc="Static HTML project in LawrenceBeatYourselfUp.com" data-install="Static HTML — clone and open `index.html`" data-repo="https://github.com/lozturner/beatyourselfup">▶ Play</a>
+        <a class="source-btn" href="https://github.com/lozturner/beatyourselfup" target="_blank" rel="noopener" title="View source on GitHub">🐙</a>
       </div>
     </article>
 
-    <article class="card" data-name="llmstack" data-framework="Python + Django">
+    <article class="card" data-id="f597339f56ff" data-name="llmstack" data-framework="Python + Django" data-category="DEMO">
       <div class="card-thumb">
         <img src="thumbnails/f597339f56ff.png" alt="LLMStack" loading="lazy">
         <div class="framework-icon" title="Python + Django">Py</div>
-        <div class="status-dot" title="Read-only mirror"></div>
+        <div class="category-badge" style="background:#f59e0b22;border-color:#f59e0b66;color:#f59e0b">🎬 DEMO</div>
+        <button class="fav-btn" data-fav="f597339f56ff" title="Bookmark">☆</button>
       </div>
       <div class="card-body">
         <div class="card-badges">
           <span class="badge badge-python">Python + Django</span>
           <span class="badge badge-port">:8001</span>
-          <span class="badge badge-docker">Docker</span><span class="badge badge-readme">README</span>
         </div>
         <div class="card-name">LLMStack</div>
         <div class="card-desc"></div>
       </div>
-      <div class="recovery-panel">
-        <div class="recovery-btns">
-          <a class="recovery-run replit" href="https://replit.com/github/lozturner/LLMStack" target="_blank" rel="noopener" title="Opens a Python sandbox on Replit to fork &amp; run">▶ Run</a>
-          <a class="recovery-source" href="https://github.com/trypromptly/LLMStack/blob/HEAD/manage.py" target="_blank" rel="noopener" title="Open manage.py on GitHub">🐙 Source</a>
-          <button class="recovery-clone" onclick="copyClone('https://github.com/trypromptly/LLMStack.git', event)" title="Copy git clone command">📋</button>
-        </div>
+      <div class="card-footer">
+        <a class="play-btn" href="#" data-demo="f597339f56ff" data-name="LLMStack" data-framework="Python + Django" data-category="DEMO" data-thumb="thumbnails/f597339f56ff.png" data-desc="" data-install="Python server — clone, `pip install -r requirements.txt`, then `python manage.py runserver`" data-repo="https://github.com/trypromptly/LLMStack">▶ Play</a>
+        <a class="source-btn" href="https://github.com/trypromptly/LLMStack" target="_blank" rel="noopener" title="View source on GitHub">🐙</a>
       </div>
     </article>
 
-    <article class="card" data-name="localhost phonebook" data-framework="Electron + Express">
+    <article class="card" data-id="ed7be613f549" data-name="localhost phonebook" data-framework="Electron + Express" data-category="DOWNLOAD">
       <div class="card-thumb">
         <img src="thumbnails/ed7be613f549.png" alt="Localhost Phonebook" loading="lazy">
         <div class="framework-icon" title="Electron + Express">Ex</div>
-        <div class="status-dot" title="Read-only mirror"></div>
+        <div class="category-badge" style="background:#94a3b822;border-color:#94a3b866;color:#94a3b8">💾 DOWNLOAD</div>
+        <button class="fav-btn" data-fav="ed7be613f549" title="Bookmark">☆</button>
       </div>
       <div class="card-body">
         <div class="card-badges">
           <span class="badge badge-express">Electron + Express</span>
           <span class="badge badge-port">:4000</span>
-          <span class="badge badge-electron">Desktop</span>
         </div>
         <div class="card-name">Localhost Phonebook</div>
         <div class="card-desc">Dashboard for all localhost development projects</div>
       </div>
-      <div class="recovery-panel">
-        <div class="recovery-btns">
-          <a class="recovery-run desktop" href="https://github.com/lozturner/localhost-phonebook/archive/HEAD.zip" title="Desktop app — downloads the source ZIP to run locally">▶ Run</a>
-          <a class="recovery-source" href="https://github.com/lozturner/localhost-phonebook/blob/HEAD/tray.js" target="_blank" rel="noopener" title="Open tray.js on GitHub">🐙 Source</a>
-          <button class="recovery-clone" onclick="copyClone('https://github.com/lozturner/localhost-phonebook.git', event)" title="Copy git clone command">📋</button>
-        </div>
+      <div class="card-footer">
+        <a class="play-btn" href="https://github.com/lozturner/localhost-phonebook/archive/HEAD.zip" target="_blank" rel="noopener" data-name="Localhost Phonebook" data-framework="Electron + Express" data-category="DOWNLOAD" data-thumb="thumbnails/ed7be613f549.png" data-desc="Dashboard for all localhost development projects" data-install="Desktop app — clone, then `npm install &amp;&amp; npm start`" data-repo="https://github.com/lozturner/localhost-phonebook">▶ Play</a>
+        <a class="source-btn" href="https://github.com/lozturner/localhost-phonebook" target="_blank" rel="noopener" title="View source on GitHub">🐙</a>
       </div>
     </article>
 
-    <article class="card" data-name="loz pipeline (flask)" data-framework="Python">
+    <article class="card" data-id="f920fa8ab3f5" data-name="loz pipeline (flask)" data-framework="Python" data-category="DEMO">
       <div class="card-thumb">
         <img src="thumbnails/f920fa8ab3f5.png" alt="Loz Pipeline (Flask)" loading="lazy">
         <div class="framework-icon" title="Python">Py</div>
-        <div class="status-dot" title="Read-only mirror"></div>
+        <div class="category-badge" style="background:#f59e0b22;border-color:#f59e0b66;color:#f59e0b">🎬 DEMO</div>
+        <button class="fav-btn" data-fav="f920fa8ab3f5" title="Bookmark">☆</button>
       </div>
       <div class="card-body">
         <div class="card-badges">
           <span class="badge badge-python">Python</span>
           <span class="badge badge-port">:5000</span>
-          
         </div>
         <div class="card-name">Loz Pipeline (Flask)</div>
         <div class="card-desc">Python app</div>
       </div>
-      <div class="recovery-panel">
-        <div class="recovery-btns">
-          <a class="recovery-run replit" href="https://replit.com/github/lozturner/laurence-wispr" target="_blank" rel="noopener" title="Opens a Python sandbox on Replit to fork &amp; run">▶ Run</a>
-          <a class="recovery-source" href="https://github.com/lozturner/laurence-wispr/blob/HEAD/pipeline.py" target="_blank" rel="noopener" title="Open pipeline.py on GitHub">🐙 Source</a>
-          <button class="recovery-clone" onclick="copyClone('https://github.com/lozturner/laurence-wispr.git', event)" title="Copy git clone command">📋</button>
-        </div>
+      <div class="card-footer">
+        <a class="play-btn" href="#" data-demo="f920fa8ab3f5" data-name="Loz Pipeline (Flask)" data-framework="Python" data-category="DEMO" data-thumb="thumbnails/f920fa8ab3f5.png" data-desc="Python app" data-install="Python — clone, then `python pipeline.py`" data-repo="https://github.com/lozturner/laurence-wispr">▶ Play</a>
+        <a class="source-btn" href="https://github.com/lozturner/laurence-wispr" target="_blank" rel="noopener" title="View source on GitHub">🐙</a>
       </div>
     </article>
 
-    <article class="card" data-name="movie magic" data-framework="Electron">
+    <article class="card" data-id="b64c377881c5" data-name="movie magic" data-framework="Electron" data-category="LIVE">
       <div class="card-thumb">
         <img src="thumbnails/b64c377881c5.png" alt="Movie Magic" loading="lazy">
         <div class="framework-icon" title="Electron">E</div>
-        <div class="status-dot" title="Read-only mirror"></div>
+        <div class="category-badge" style="background:#22c55e22;border-color:#22c55e66;color:#22c55e">🟢 LIVE</div>
+        <button class="fav-btn" data-fav="b64c377881c5" title="Bookmark">☆</button>
       </div>
       <div class="card-body">
         <div class="card-badges">
           <span class="badge badge-electron">Electron</span>
           
-          <span class="badge badge-electron">Desktop</span>
         </div>
         <div class="card-name">Movie Magic</div>
         <div class="card-desc">Movie Magic — Presentation translator for neurodivergent speakers. Verbose to punchy.</div>
       </div>
-      <div class="recovery-panel">
-        <div class="recovery-btns">
-          <a class="recovery-run" href="https://lozturner.github.io/movie-magic/" target="_blank" rel="noopener" title="Opens live at https://lozturner.github.io/movie-magic/">▶ Run</a>
-          <a class="recovery-source" href="https://github.com/lozturner/movie-magic/blob/HEAD/main.js" target="_blank" rel="noopener" title="Open main.js on GitHub">🐙 Source</a>
-          <button class="recovery-clone" onclick="copyClone('https://github.com/lozturner/movie-magic.git', event)" title="Copy git clone command">📋</button>
-        </div>
+      <div class="card-footer">
+        <a class="play-btn" href="https://lozturner.github.io/movie-magic/" target="_blank" rel="noopener" data-name="Movie Magic" data-framework="Electron" data-category="LIVE" data-thumb="thumbnails/b64c377881c5.png" data-desc="Movie Magic — Presentation translator for neurodivergent speakers. Verbose to punchy." data-install="Desktop app — clone, then `npm install &amp;&amp; npm start`" data-repo="https://github.com/lozturner/movie-magic">▶ Play</a>
+        <a class="source-btn" href="https://github.com/lozturner/movie-magic" target="_blank" rel="noopener" title="View source on GitHub">🐙</a>
       </div>
     </article>
 
-    <article class="card" data-name="my react app" data-framework="Create React App">
+    <article class="card" data-id="e751a56c2662" data-name="my react app" data-framework="Create React App" data-category="DEMO">
       <div class="card-thumb">
         <img src="thumbnails/e751a56c2662.png" alt="My React App" loading="lazy">
         <div class="framework-icon" title="Create React App">R</div>
-        <div class="status-dot" title="Read-only mirror"></div>
+        <div class="category-badge" style="background:#f59e0b22;border-color:#f59e0b66;color:#f59e0b">🎬 DEMO</div>
+        <button class="fav-btn" data-fav="e751a56c2662" title="Bookmark">☆</button>
       </div>
       <div class="card-body">
         <div class="card-badges">
           <span class="badge badge-react">Create React App</span>
           <span class="badge badge-port">:3006</span>
-          <span class="badge badge-readme">README</span>
         </div>
         <div class="card-name">My React App</div>
         <div class="card-desc">This project was bootstrapped with Create React App.</div>
       </div>
-      <div class="recovery-panel">
-        <div class="recovery-btns">
-          <a class="recovery-run node" href="https://github.com/lozturner/my-react-app" target="_blank" rel="noopener" title="Node/JS app — clone &amp; run locally per README">▶ Run</a>
-          <a class="recovery-source" href="https://github.com/lozturner/my-react-app/blob/HEAD/app.js" target="_blank" rel="noopener" title="Open app.js on GitHub">🐙 Source</a>
-          <button class="recovery-clone" onclick="copyClone('https://github.com/lozturner/my-react-app.git', event)" title="Copy git clone command">📋</button>
-        </div>
+      <div class="card-footer">
+        <a class="play-btn" href="#" data-demo="e751a56c2662" data-name="My React App" data-framework="Create React App" data-category="DEMO" data-thumb="thumbnails/e751a56c2662.png" data-desc="This project was bootstrapped with Create React App." data-install="React — clone, `npm install`, `npm start`" data-repo="https://github.com/lozturner/my-react-app">▶ Play</a>
+        <a class="source-btn" href="https://github.com/lozturner/my-react-app" target="_blank" rel="noopener" title="View source on GitHub">🐙</a>
       </div>
     </article>
 
-    <article class="card" data-name="niggly machine" data-framework="Node.js">
+    <article class="card" data-id="fa5b7f19890b" data-name="niggly machine" data-framework="Node.js" data-category="LIVE">
       <div class="card-thumb">
         <img src="thumbnails/fa5b7f19890b.png" alt="Niggly Machine" loading="lazy">
         <div class="framework-icon" title="Node.js">?</div>
-        <div class="status-dot" title="Read-only mirror"></div>
+        <div class="category-badge" style="background:#22c55e22;border-color:#22c55e66;color:#22c55e">🟢 LIVE</div>
+        <button class="fav-btn" data-fav="fa5b7f19890b" title="Bookmark">☆</button>
       </div>
       <div class="card-body">
         <div class="card-badges">
           <span class="badge badge-framework">Node.js</span>
           
-          <span class="badge badge-readme">README</span>
         </div>
         <div class="card-name">Niggly Machine</div>
         <div class="card-desc"></div>
       </div>
-      <div class="recovery-panel">
-        <div class="recovery-btns">
-          <a class="recovery-run" href="https://lozturner.github.io/lawrence-move-in/" target="_blank" rel="noopener" title="Opens live at https://lozturner.github.io/lawrence-move-in/">▶ Run</a>
-          <a class="recovery-source" href="https://github.com/lozturner/lawrence-move-in" target="_blank" rel="noopener" title="Open repo on GitHub">🐙 Source</a>
-          <button class="recovery-clone" onclick="copyClone('https://github.com/lozturner/lawrence-move-in.git', event)" title="Copy git clone command">📋</button>
-        </div>
+      <div class="card-footer">
+        <a class="play-btn" href="https://lozturner.github.io/lawrence-move-in/" target="_blank" rel="noopener" data-name="Niggly Machine" data-framework="Node.js" data-category="LIVE" data-thumb="thumbnails/fa5b7f19890b.png" data-desc="" data-install="Node server — clone, `npm install`, `npm start`" data-repo="https://github.com/lozturner/lawrence-move-in">▶ Play</a>
+        <a class="source-btn" href="https://github.com/lozturner/lawrence-move-in" target="_blank" rel="noopener" title="View source on GitHub">🐙</a>
       </div>
     </article>
 
-    <article class="card" data-name="node http server" data-framework="Static HTML">
+    <article class="card" data-id="ba65107d5aa9" data-name="node http server" data-framework="Static HTML" data-category="DEMO">
       <div class="card-thumb">
         <img src="thumbnails/ba65107d5aa9.png" alt="Node Http Server" loading="lazy">
         <div class="framework-icon" title="Static HTML">H</div>
-        <div class="status-dot" title="Read-only mirror"></div>
+        <div class="category-badge" style="background:#f59e0b22;border-color:#f59e0b66;color:#f59e0b">🎬 DEMO</div>
+        <button class="fav-btn" data-fav="ba65107d5aa9" title="Bookmark">☆</button>
       </div>
       <div class="card-body">
         <div class="card-badges">
           <span class="badge badge-static">Static HTML</span>
           <span class="badge badge-port">:8081</span>
-          
         </div>
         <div class="card-name">Node Http Server</div>
         <div class="card-desc">Static HTML app</div>
       </div>
-      <div class="recovery-panel">
-        <div class="recovery-btns">
-          <a class="recovery-run desktop" href="https://github.com/lozturner/laurence-maia/archive/HEAD.zip" title="Download source ZIP">▶ Run</a>
-          <a class="recovery-source" href="https://github.com/lozturner/laurence-maia" target="_blank" rel="noopener" title="Open repo on GitHub">🐙 Source</a>
-          <button class="recovery-clone" onclick="copyClone('https://github.com/lozturner/laurence-maia.git', event)" title="Copy git clone command">📋</button>
-        </div>
+      <div class="card-footer">
+        <a class="play-btn" href="#" data-demo="ba65107d5aa9" data-name="Node Http Server" data-framework="Static HTML" data-category="DEMO" data-thumb="thumbnails/ba65107d5aa9.png" data-desc="Static HTML app" data-install="Static HTML — clone and open `index.html`" data-repo="https://github.com/lozturner/laurence-maia">▶ Play</a>
+        <a class="source-btn" href="https://github.com/lozturner/laurence-maia" target="_blank" rel="noopener" title="View source on GitHub">🐙</a>
       </div>
     </article>
 
-    <article class="card" data-name="node-red" data-framework="Node-RED">
+    <article class="card" data-id="19d874f92a9c" data-name="node-red" data-framework="Node-RED" data-category="VENDOR">
       <div class="card-thumb">
         <img src="thumbnails/19d874f92a9c.png" alt="Node-RED" loading="lazy">
         <div class="framework-icon" title="Node-RED">NR</div>
-        <div class="status-dot" title="Read-only mirror"></div>
+        <div class="category-badge" style="background:#6366f122;border-color:#6366f166;color:#6366f1">🌐 VENDOR</div>
+        <button class="fav-btn" data-fav="19d874f92a9c" title="Bookmark">☆</button>
       </div>
       <div class="card-body">
         <div class="card-badges">
           <span class="badge badge-nodered">Node-RED</span>
           <span class="badge badge-port">:1880</span>
-          
         </div>
         <div class="card-name">Node-RED</div>
         <div class="card-desc">Flow-based automation and IoT platform</div>
       </div>
-      <div class="recovery-panel">
-        <div class="recovery-btns">
-          <a class="recovery-run node" href="https://nodered.org" target="_blank" rel="noopener" title="Vendored — opens the upstream project homepage">▶ Run</a>
-            <a class="recovery-source" href="https://nodered.org" target="_blank" rel="noopener" title="Upstream homepage">🐙 Source</a>
-        </div>
+      <div class="card-footer">
+        <a class="play-btn" href="https://nodered.org" target="_blank" rel="noopener" data-name="Node-RED" data-framework="Node-RED" data-category="VENDOR" data-thumb="thumbnails/19d874f92a9c.png" data-desc="Flow-based automation and IoT platform" data-install="Node server — clone, `npm install`, `npm start`" data-repo="">▶ Play</a>
+        
       </div>
     </article>
 
-    <article class="card" data-name="org sim" data-framework="Express">
+    <article class="card" data-id="c4a85397b86a" data-name="org sim" data-framework="Express" data-category="DOWNLOAD">
       <div class="card-thumb">
         <img src="thumbnails/c4a85397b86a.png" alt="Org Sim" loading="lazy">
         <div class="framework-icon" title="Express">Ex</div>
-        <div class="status-dot" title="Read-only mirror"></div>
+        <div class="category-badge" style="background:#94a3b822;border-color:#94a3b866;color:#94a3b8">💾 DOWNLOAD</div>
+        <button class="fav-btn" data-fav="c4a85397b86a" title="Bookmark">☆</button>
       </div>
       <div class="card-body">
         <div class="card-badges">
           <span class="badge badge-express">Express</span>
           <span class="badge badge-port">:3999</span>
-          
         </div>
         <div class="card-name">Org Sim</div>
         <div class="card-desc">Express project in org-sim</div>
       </div>
-      <div class="recovery-panel">
-        <div class="recovery-btns">
-          <a class="recovery-run node" href="https://github.com/lozturner/org-sim" target="_blank" rel="noopener" title="Node/JS app — clone &amp; run locally per README">▶ Run</a>
-          <a class="recovery-source" href="https://github.com/lozturner/org-sim" target="_blank" rel="noopener" title="Open repo on GitHub">🐙 Source</a>
-          <button class="recovery-clone" onclick="copyClone('https://github.com/lozturner/org-sim.git', event)" title="Copy git clone command">📋</button>
-        </div>
+      <div class="card-footer">
+        <a class="play-btn" href="https://github.com/lozturner/org-sim/archive/HEAD.zip" target="_blank" rel="noopener" data-name="Org Sim" data-framework="Express" data-category="DOWNLOAD" data-thumb="thumbnails/c4a85397b86a.png" data-desc="Express project in org-sim" data-install="Node server — clone, `npm install`, `npm start`" data-repo="https://github.com/lozturner/org-sim">▶ Play</a>
+        <a class="source-btn" href="https://github.com/lozturner/org-sim" target="_blank" rel="noopener" title="View source on GitHub">🐙</a>
       </div>
     </article>
 
-    <article class="card" data-name="personal ai system" data-framework="Python">
+    <article class="card" data-id="e0f87abbd4e0" data-name="personal ai system" data-framework="Python" data-category="DEMO">
       <div class="card-thumb">
         <img src="thumbnails/e0f87abbd4e0.png" alt="Personal Ai System" loading="lazy">
         <div class="framework-icon" title="Python">Py</div>
-        <div class="status-dot" title="Read-only mirror"></div>
+        <div class="category-badge" style="background:#f59e0b22;border-color:#f59e0b66;color:#f59e0b">🎬 DEMO</div>
+        <button class="fav-btn" data-fav="e0f87abbd4e0" title="Bookmark">☆</button>
       </div>
       <div class="card-body">
         <div class="card-badges">
           <span class="badge badge-python">Python</span>
           
-          <span class="badge badge-readme">README</span>
         </div>
         <div class="card-name">Personal Ai System</div>
         <div class="card-desc">A reusable CSS JS animation system designed for ADHD-friendly micro-interactions. Drop into any project.</div>
       </div>
-      <div class="recovery-panel">
-        <div class="recovery-btns">
-          <a class="recovery-run replit" href="https://replit.com/github/lozturner/personal-ai-system" target="_blank" rel="noopener" title="Opens a Python sandbox on Replit to fork &amp; run">▶ Run</a>
-          <a class="recovery-source" href="https://github.com/lozturner/personal-ai-system" target="_blank" rel="noopener" title="Open repo on GitHub">🐙 Source</a>
-          <button class="recovery-clone" onclick="copyClone('https://github.com/lozturner/personal-ai-system.git', event)" title="Copy git clone command">📋</button>
-        </div>
+      <div class="card-footer">
+        <a class="play-btn" href="#" data-demo="e0f87abbd4e0" data-name="Personal Ai System" data-framework="Python" data-category="DEMO" data-thumb="thumbnails/e0f87abbd4e0.png" data-desc="A reusable CSS JS animation system designed for ADHD-friendly micro-interactions. Drop into any project." data-install="Python — clone, then `python main.py`" data-repo="https://github.com/lozturner/personal-ai-system">▶ Play</a>
+        <a class="source-btn" href="https://github.com/lozturner/personal-ai-system" target="_blank" rel="noopener" title="View source on GitHub">🐙</a>
       </div>
     </article>
 
-    <article class="card" data-name="picture finder" data-framework="Python">
+    <article class="card" data-id="6b62472a6d40" data-name="picture finder" data-framework="Python" data-category="LIVE">
       <div class="card-thumb">
         <img src="thumbnails/6b62472a6d40.png" alt="Picture Finder" loading="lazy">
         <div class="framework-icon" title="Python">Py</div>
-        <div class="status-dot" title="Read-only mirror"></div>
+        <div class="category-badge" style="background:#22c55e22;border-color:#22c55e66;color:#22c55e">🟢 LIVE</div>
+        <button class="fav-btn" data-fav="6b62472a6d40" title="Bookmark">☆</button>
       </div>
       <div class="card-body">
         <div class="card-badges">
           <span class="badge badge-python">Python</span>
           <span class="badge badge-port">:8776</span>
-          
         </div>
         <div class="card-name">Picture Finder</div>
         <div class="card-desc">Python app</div>
       </div>
-      <div class="recovery-panel">
-        <div class="recovery-btns">
-          <a class="recovery-run" href="https://lozturner.github.io/laurence-bring/" target="_blank" rel="noopener" title="Opens live at https://lozturner.github.io/laurence-bring/">▶ Run</a>
-          <a class="recovery-source" href="https://github.com/lozturner/laurence-bring" target="_blank" rel="noopener" title="Open repo on GitHub">🐙 Source</a>
-          <button class="recovery-clone" onclick="copyClone('https://github.com/lozturner/laurence-bring.git', event)" title="Copy git clone command">📋</button>
-        </div>
+      <div class="card-footer">
+        <a class="play-btn" href="https://lozturner.github.io/laurence-bring/" target="_blank" rel="noopener" data-name="Picture Finder" data-framework="Python" data-category="LIVE" data-thumb="thumbnails/6b62472a6d40.png" data-desc="Python app" data-install="Python — clone, then `python picture-finder/server.py`" data-repo="https://github.com/lozturner/laurence-bring">▶ Play</a>
+        <a class="source-btn" href="https://github.com/lozturner/laurence-bring" target="_blank" rel="noopener" title="View source on GitHub">🐙</a>
       </div>
     </article>
 
-    <article class="card" data-name="prompt forge" data-framework="Python">
+    <article class="card" data-id="89fdd981cbbb" data-name="prompt forge" data-framework="Python" data-category="LIVE">
       <div class="card-thumb">
         <img src="thumbnails/89fdd981cbbb.png" alt="Prompt Forge" loading="lazy">
         <div class="framework-icon" title="Python">Py</div>
-        <div class="status-dot" title="Read-only mirror"></div>
+        <div class="category-badge" style="background:#22c55e22;border-color:#22c55e66;color:#22c55e">🟢 LIVE</div>
+        <button class="fav-btn" data-fav="89fdd981cbbb" title="Bookmark">☆</button>
       </div>
       <div class="card-body">
         <div class="card-badges">
           <span class="badge badge-python">Python</span>
           <span class="badge badge-port">:8786</span>
-          
         </div>
         <div class="card-name">Prompt Forge</div>
         <div class="card-desc">Python app</div>
       </div>
-      <div class="recovery-panel">
-        <div class="recovery-btns">
-          <a class="recovery-run" href="https://lozturner.github.io/laurence-bring/prompt-forge.html" target="_blank" rel="noopener" title="Opens live at https://lozturner.github.io/laurence-bring/prompt-forge.html">▶ Run</a>
-          <a class="recovery-source" href="https://github.com/lozturner/laurence-bring/blob/HEAD/prompt-forge.html" target="_blank" rel="noopener" title="Open prompt-forge.html on GitHub">🐙 Source</a>
-          <button class="recovery-clone" onclick="copyClone('https://github.com/lozturner/laurence-bring.git', event)" title="Copy git clone command">📋</button>
-        </div>
+      <div class="card-footer">
+        <a class="play-btn" href="https://lozturner.github.io/laurence-bring/prompt-forge.html" target="_blank" rel="noopener" data-name="Prompt Forge" data-framework="Python" data-category="LIVE" data-thumb="thumbnails/89fdd981cbbb.png" data-desc="Python app" data-install="Python — clone, then `python -m http.server 8786`" data-repo="https://github.com/lozturner/laurence-bring">▶ Play</a>
+        <a class="source-btn" href="https://github.com/lozturner/laurence-bring" target="_blank" rel="noopener" title="View source on GitHub">🐙</a>
       </div>
     </article>
 
-    <article class="card" data-name="python static" data-framework="Python">
+    <article class="card" data-id="1421d18568ab" data-name="python static" data-framework="Python" data-category="DEMO">
       <div class="card-thumb">
         <img src="thumbnails/1421d18568ab.png" alt="Python Static" loading="lazy">
         <div class="framework-icon" title="Python">Py</div>
-        <div class="status-dot" title="Read-only mirror"></div>
+        <div class="category-badge" style="background:#f59e0b22;border-color:#f59e0b66;color:#f59e0b">🎬 DEMO</div>
+        <button class="fav-btn" data-fav="1421d18568ab" title="Bookmark">☆</button>
       </div>
       <div class="card-body">
         <div class="card-badges">
           <span class="badge badge-python">Python</span>
           <span class="badge badge-port">:8000</span>
-          
         </div>
         <div class="card-name">Python Static</div>
         <div class="card-desc">Python app</div>
       </div>
-      <div class="recovery-panel">
-        <div class="recovery-btns">
-          <a class="recovery-run replit" href="https://replit.com/github/lozturner/laurence-maia" target="_blank" rel="noopener" title="Opens a Python sandbox on Replit to fork &amp; run">▶ Run</a>
-          <a class="recovery-source" href="https://github.com/lozturner/laurence-maia" target="_blank" rel="noopener" title="Open repo on GitHub">🐙 Source</a>
-          <button class="recovery-clone" onclick="copyClone('https://github.com/lozturner/laurence-maia.git', event)" title="Copy git clone command">📋</button>
-        </div>
+      <div class="card-footer">
+        <a class="play-btn" href="#" data-demo="1421d18568ab" data-name="Python Static" data-framework="Python" data-category="DEMO" data-thumb="thumbnails/1421d18568ab.png" data-desc="Python app" data-install="Python — clone, then `python -m http.server 8000`" data-repo="https://github.com/lozturner/laurence-maia">▶ Play</a>
+        <a class="source-btn" href="https://github.com/lozturner/laurence-maia" target="_blank" rel="noopener" title="View source on GitHub">🐙</a>
       </div>
     </article>
 
-    <article class="card" data-name="sandra" data-framework="Electron">
+    <article class="card" data-id="4a0b58fd63a5" data-name="sandra" data-framework="Electron" data-category="DOWNLOAD">
       <div class="card-thumb">
         <img src="thumbnails/4a0b58fd63a5.png" alt="Sandra" loading="lazy">
         <div class="framework-icon" title="Electron">E</div>
-        <div class="status-dot" title="Read-only mirror"></div>
+        <div class="category-badge" style="background:#94a3b822;border-color:#94a3b866;color:#94a3b8">💾 DOWNLOAD</div>
+        <button class="fav-btn" data-fav="4a0b58fd63a5" title="Bookmark">☆</button>
       </div>
       <div class="card-body">
         <div class="card-badges">
           <span class="badge badge-electron">Electron</span>
           
-          <span class="badge badge-electron">Desktop</span>
         </div>
         <div class="card-name">Sandra</div>
         <div class="card-desc">Sandra — Voice-activated desktop app launcher</div>
       </div>
-      <div class="recovery-panel">
-        <div class="recovery-btns">
-          <a class="recovery-run desktop" href="https://github.com/lozturner/sandra/archive/HEAD.zip" title="Desktop app — downloads the source ZIP to run locally">▶ Run</a>
-          <a class="recovery-source" href="https://github.com/lozturner/sandra/blob/HEAD/main.js" target="_blank" rel="noopener" title="Open main.js on GitHub">🐙 Source</a>
-          <button class="recovery-clone" onclick="copyClone('https://github.com/lozturner/sandra.git', event)" title="Copy git clone command">📋</button>
-        </div>
+      <div class="card-footer">
+        <a class="play-btn" href="https://github.com/lozturner/sandra/archive/HEAD.zip" target="_blank" rel="noopener" data-name="Sandra" data-framework="Electron" data-category="DOWNLOAD" data-thumb="thumbnails/4a0b58fd63a5.png" data-desc="Sandra — Voice-activated desktop app launcher" data-install="Desktop app — clone, then `npm install &amp;&amp; npm start`" data-repo="https://github.com/lozturner/sandra">▶ Play</a>
+        <a class="source-btn" href="https://github.com/lozturner/sandra" target="_blank" rel="noopener" title="View source on GitHub">🐙</a>
       </div>
     </article>
 
-    <article class="card" data-name="sea lion" data-framework="Python">
+    <article class="card" data-id="e25fafff4092" data-name="sea lion" data-framework="Python" data-category="LIVE">
       <div class="card-thumb">
         <img src="thumbnails/e25fafff4092.png" alt="Sea Lion" loading="lazy">
         <div class="framework-icon" title="Python">Py</div>
-        <div class="status-dot" title="Read-only mirror"></div>
+        <div class="category-badge" style="background:#22c55e22;border-color:#22c55e66;color:#22c55e">🟢 LIVE</div>
+        <button class="fav-btn" data-fav="e25fafff4092" title="Bookmark">☆</button>
       </div>
       <div class="card-body">
         <div class="card-badges">
           <span class="badge badge-python">Python</span>
           <span class="badge badge-port">:8775</span>
-          
         </div>
         <div class="card-name">Sea Lion</div>
         <div class="card-desc">Python app</div>
       </div>
-      <div class="recovery-panel">
-        <div class="recovery-btns">
-          <a class="recovery-run" href="https://lozturner.github.io/laurence-bring/sea-lion.html" target="_blank" rel="noopener" title="Opens live at https://lozturner.github.io/laurence-bring/sea-lion.html">▶ Run</a>
-          <a class="recovery-source" href="https://github.com/lozturner/laurence-bring/blob/HEAD/sea-lion.html" target="_blank" rel="noopener" title="Open sea-lion.html on GitHub">🐙 Source</a>
-          <button class="recovery-clone" onclick="copyClone('https://github.com/lozturner/laurence-bring.git', event)" title="Copy git clone command">📋</button>
-        </div>
+      <div class="card-footer">
+        <a class="play-btn" href="https://lozturner.github.io/laurence-bring/sea-lion.html" target="_blank" rel="noopener" data-name="Sea Lion" data-framework="Python" data-category="LIVE" data-thumb="thumbnails/e25fafff4092.png" data-desc="Python app" data-install="Python — clone, then `python -m http.server 8775`" data-repo="https://github.com/lozturner/laurence-bring">▶ Play</a>
+        <a class="source-btn" href="https://github.com/lozturner/laurence-bring" target="_blank" rel="noopener" title="View source on GitHub">🐙</a>
       </div>
     </article>
 
-    <article class="card" data-name="see ahead map" data-framework="Python">
+    <article class="card" data-id="019369d5d1c8" data-name="see ahead map" data-framework="Python" data-category="LIVE">
       <div class="card-thumb">
         <img src="thumbnails/019369d5d1c8.png" alt="See Ahead Map" loading="lazy">
         <div class="framework-icon" title="Python">Py</div>
-        <div class="status-dot" title="Read-only mirror"></div>
+        <div class="category-badge" style="background:#22c55e22;border-color:#22c55e66;color:#22c55e">🟢 LIVE</div>
+        <button class="fav-btn" data-fav="019369d5d1c8" title="Bookmark">☆</button>
       </div>
       <div class="card-body">
         <div class="card-badges">
           <span class="badge badge-python">Python</span>
           <span class="badge badge-port">:7332</span>
-          
         </div>
         <div class="card-name">See Ahead Map</div>
         <div class="card-desc">Python app</div>
       </div>
-      <div class="recovery-panel">
-        <div class="recovery-btns">
-          <a class="recovery-run" href="https://lozturner.github.io/laurence-see-ahead/see-ahead-map.html" target="_blank" rel="noopener" title="Opens live at https://lozturner.github.io/laurence-see-ahead/see-ahead-map.html">▶ Run</a>
-          <a class="recovery-source" href="https://github.com/lozturner/laurence-see-ahead/blob/HEAD/see-ahead-map.html" target="_blank" rel="noopener" title="Open see-ahead-map.html on GitHub">🐙 Source</a>
-          <button class="recovery-clone" onclick="copyClone('https://github.com/lozturner/laurence-see-ahead.git', event)" title="Copy git clone command">📋</button>
-        </div>
+      <div class="card-footer">
+        <a class="play-btn" href="https://lozturner.github.io/laurence-see-ahead/see-ahead-map.html" target="_blank" rel="noopener" data-name="See Ahead Map" data-framework="Python" data-category="LIVE" data-thumb="thumbnails/019369d5d1c8.png" data-desc="Python app" data-install="Python — clone, then `python -m http.server 7332 --directory .`" data-repo="https://github.com/lozturner/laurence-see-ahead">▶ Play</a>
+        <a class="source-btn" href="https://github.com/lozturner/laurence-see-ahead" target="_blank" rel="noopener" title="View source on GitHub">🐙</a>
       </div>
     </article>
 
-    <article class="card" data-name="see ahead setup" data-framework="Python">
+    <article class="card" data-id="aa35a287244f" data-name="see ahead setup" data-framework="Python" data-category="LIVE">
       <div class="card-thumb">
         <img src="thumbnails/aa35a287244f.png" alt="See Ahead Setup" loading="lazy">
         <div class="framework-icon" title="Python">Py</div>
-        <div class="status-dot" title="Read-only mirror"></div>
+        <div class="category-badge" style="background:#22c55e22;border-color:#22c55e66;color:#22c55e">🟢 LIVE</div>
+        <button class="fav-btn" data-fav="aa35a287244f" title="Bookmark">☆</button>
       </div>
       <div class="card-body">
         <div class="card-badges">
           <span class="badge badge-python">Python</span>
           <span class="badge badge-port">:7331</span>
-          
         </div>
         <div class="card-name">See Ahead Setup</div>
         <div class="card-desc">Python app</div>
       </div>
-      <div class="recovery-panel">
-        <div class="recovery-btns">
-          <a class="recovery-run" href="https://lozturner.github.io/laurence-see-ahead/" target="_blank" rel="noopener" title="Opens live at https://lozturner.github.io/laurence-see-ahead/">▶ Run</a>
-          <a class="recovery-source" href="https://github.com/lozturner/laurence-see-ahead/blob/HEAD/emergency-bot/form/server.py" target="_blank" rel="noopener" title="Open emergency-bot/form/server.py on GitHub">🐙 Source</a>
-          <button class="recovery-clone" onclick="copyClone('https://github.com/lozturner/laurence-see-ahead.git', event)" title="Copy git clone command">📋</button>
-        </div>
+      <div class="card-footer">
+        <a class="play-btn" href="https://lozturner.github.io/laurence-see-ahead/" target="_blank" rel="noopener" data-name="See Ahead Setup" data-framework="Python" data-category="LIVE" data-thumb="thumbnails/aa35a287244f.png" data-desc="Python app" data-install="Python — clone, then `python emergency-bot/form/server.py`" data-repo="https://github.com/lozturner/laurence-see-ahead">▶ Play</a>
+        <a class="source-btn" href="https://github.com/lozturner/laurence-see-ahead" target="_blank" rel="noopener" title="View source on GitHub">🐙</a>
       </div>
     </article>
 
-    <article class="card" data-name="sentinel bar" data-framework="Python">
+    <article class="card" data-id="6fd8d0caf254" data-name="sentinel bar" data-framework="Python" data-category="DEMO">
       <div class="card-thumb">
         <img src="thumbnails/6fd8d0caf254.png" alt="Sentinel Bar" loading="lazy">
         <div class="framework-icon" title="Python">Py</div>
-        <div class="status-dot" title="Read-only mirror"></div>
+        <div class="category-badge" style="background:#f59e0b22;border-color:#f59e0b66;color:#f59e0b">🎬 DEMO</div>
+        <button class="fav-btn" data-fav="6fd8d0caf254" title="Bookmark">☆</button>
       </div>
       <div class="card-body">
         <div class="card-badges">
           <span class="badge badge-python">Python</span>
-          
           
         </div>
         <div class="card-name">Sentinel Bar</div>
         <div class="card-desc">Python project in sentinel-bar</div>
       </div>
-      <div class="recovery-panel">
-        <div class="recovery-btns">
-          <a class="recovery-run replit" href="https://replit.com/github/lozturner/sentinel-bar" target="_blank" rel="noopener" title="Opens a Python sandbox on Replit to fork &amp; run">▶ Run</a>
-          <a class="recovery-source" href="https://github.com/lozturner/sentinel-bar" target="_blank" rel="noopener" title="Open repo on GitHub">🐙 Source</a>
-          <button class="recovery-clone" onclick="copyClone('https://github.com/lozturner/sentinel-bar.git', event)" title="Copy git clone command">📋</button>
-        </div>
+      <div class="card-footer">
+        <a class="play-btn" href="#" data-demo="6fd8d0caf254" data-name="Sentinel Bar" data-framework="Python" data-category="DEMO" data-thumb="thumbnails/6fd8d0caf254.png" data-desc="Python project in sentinel-bar" data-install="Python — clone, then `python main.py`" data-repo="https://github.com/lozturner/sentinel-bar">▶ Play</a>
+        <a class="source-btn" href="https://github.com/lozturner/sentinel-bar" target="_blank" rel="noopener" title="View source on GitHub">🐙</a>
       </div>
     </article>
 
-    <article class="card" data-name="spend chat" data-framework="Python">
+    <article class="card" data-id="3ebbf9bbecfd" data-name="spend chat" data-framework="Python" data-category="LIVE">
       <div class="card-thumb">
         <img src="thumbnails/3ebbf9bbecfd.png" alt="Spend Chat" loading="lazy">
         <div class="framework-icon" title="Python">Py</div>
-        <div class="status-dot" title="Read-only mirror"></div>
+        <div class="category-badge" style="background:#22c55e22;border-color:#22c55e66;color:#22c55e">🟢 LIVE</div>
+        <button class="fav-btn" data-fav="3ebbf9bbecfd" title="Bookmark">☆</button>
       </div>
       <div class="card-body">
         <div class="card-badges">
           <span class="badge badge-python">Python</span>
           <span class="badge badge-port">:8767</span>
-          
         </div>
         <div class="card-name">Spend Chat</div>
         <div class="card-desc">Python app</div>
       </div>
-      <div class="recovery-panel">
-        <div class="recovery-btns">
-          <a class="recovery-run" href="https://lozturner.github.io/laurence-bring/spend-chat.html" target="_blank" rel="noopener" title="Opens live at https://lozturner.github.io/laurence-bring/spend-chat.html">▶ Run</a>
-          <a class="recovery-source" href="https://github.com/lozturner/laurence-bring/blob/HEAD/spend-chat.html" target="_blank" rel="noopener" title="Open spend-chat.html on GitHub">🐙 Source</a>
-          <button class="recovery-clone" onclick="copyClone('https://github.com/lozturner/laurence-bring.git', event)" title="Copy git clone command">📋</button>
-        </div>
+      <div class="card-footer">
+        <a class="play-btn" href="https://lozturner.github.io/laurence-bring/spend-chat.html" target="_blank" rel="noopener" data-name="Spend Chat" data-framework="Python" data-category="LIVE" data-thumb="thumbnails/3ebbf9bbecfd.png" data-desc="Python app" data-install="Python — clone, then `python -m http.server 8767`" data-repo="https://github.com/lozturner/laurence-bring">▶ Play</a>
+        <a class="source-btn" href="https://github.com/lozturner/laurence-bring" target="_blank" rel="noopener" title="View source on GitHub">🐙</a>
       </div>
     </article>
 
-    <article class="card" data-name="spend dashboard" data-framework="Python">
+    <article class="card" data-id="e56273e7742c" data-name="spend dashboard" data-framework="Python" data-category="LIVE">
       <div class="card-thumb">
         <img src="thumbnails/e56273e7742c.png" alt="Spend Dashboard" loading="lazy">
         <div class="framework-icon" title="Python">Py</div>
-        <div class="status-dot" title="Read-only mirror"></div>
+        <div class="category-badge" style="background:#22c55e22;border-color:#22c55e66;color:#22c55e">🟢 LIVE</div>
+        <button class="fav-btn" data-fav="e56273e7742c" title="Bookmark">☆</button>
       </div>
       <div class="card-body">
         <div class="card-badges">
           <span class="badge badge-python">Python</span>
           <span class="badge badge-port">:8769</span>
-          
         </div>
         <div class="card-name">Spend Dashboard</div>
         <div class="card-desc">Python app</div>
       </div>
-      <div class="recovery-panel">
-        <div class="recovery-btns">
-          <a class="recovery-run" href="https://lozturner.github.io/laurence-bring/spend-dashboard.html" target="_blank" rel="noopener" title="Opens live at https://lozturner.github.io/laurence-bring/spend-dashboard.html">▶ Run</a>
-          <a class="recovery-source" href="https://github.com/lozturner/laurence-bring/blob/HEAD/spend-dashboard.html" target="_blank" rel="noopener" title="Open spend-dashboard.html on GitHub">🐙 Source</a>
-          <button class="recovery-clone" onclick="copyClone('https://github.com/lozturner/laurence-bring.git', event)" title="Copy git clone command">📋</button>
-        </div>
+      <div class="card-footer">
+        <a class="play-btn" href="https://lozturner.github.io/laurence-bring/spend-dashboard.html" target="_blank" rel="noopener" data-name="Spend Dashboard" data-framework="Python" data-category="LIVE" data-thumb="thumbnails/e56273e7742c.png" data-desc="Python app" data-install="Python — clone, then `python -m http.server 8769`" data-repo="https://github.com/lozturner/laurence-bring">▶ Play</a>
+        <a class="source-btn" href="https://github.com/lozturner/laurence-bring" target="_blank" rel="noopener" title="View source on GitHub">🐙</a>
       </div>
     </article>
 
-    <article class="card" data-name="spend watch" data-framework="Python">
+    <article class="card" data-id="fed9a7054180" data-name="spend watch" data-framework="Python" data-category="LIVE">
       <div class="card-thumb">
         <img src="thumbnails/fed9a7054180.png" alt="Spend Watch" loading="lazy">
         <div class="framework-icon" title="Python">Py</div>
-        <div class="status-dot" title="Read-only mirror"></div>
+        <div class="category-badge" style="background:#22c55e22;border-color:#22c55e66;color:#22c55e">🟢 LIVE</div>
+        <button class="fav-btn" data-fav="fed9a7054180" title="Bookmark">☆</button>
       </div>
       <div class="card-body">
         <div class="card-badges">
           <span class="badge badge-python">Python</span>
           <span class="badge badge-port">:8780</span>
-          
         </div>
         <div class="card-name">Spend Watch</div>
         <div class="card-desc">Python app</div>
       </div>
-      <div class="recovery-panel">
-        <div class="recovery-btns">
-          <a class="recovery-run" href="https://lozturner.github.io/laurence-bring/" target="_blank" rel="noopener" title="Opens live at https://lozturner.github.io/laurence-bring/">▶ Run</a>
-          <a class="recovery-source" href="https://github.com/lozturner/laurence-bring/blob/HEAD/spend-watch.pyw" target="_blank" rel="noopener" title="Open spend-watch.pyw on GitHub">🐙 Source</a>
-          <button class="recovery-clone" onclick="copyClone('https://github.com/lozturner/laurence-bring.git', event)" title="Copy git clone command">📋</button>
-        </div>
+      <div class="card-footer">
+        <a class="play-btn" href="https://lozturner.github.io/laurence-bring/" target="_blank" rel="noopener" data-name="Spend Watch" data-framework="Python" data-category="LIVE" data-thumb="thumbnails/fed9a7054180.png" data-desc="Python app" data-install="Python — clone, then `pythonw spend-watch.pyw`" data-repo="https://github.com/lozturner/laurence-bring">▶ Play</a>
+        <a class="source-btn" href="https://github.com/lozturner/laurence-bring" target="_blank" rel="noopener" title="View source on GitHub">🐙</a>
       </div>
     </article>
 
-    <article class="card" data-name="sql schema visualizer" data-framework="Create React App">
+    <article class="card" data-id="4472d220aa6a" data-name="sql schema visualizer" data-framework="Create React App" data-category="DEMO">
       <div class="card-thumb">
         <img src="thumbnails/4472d220aa6a.png" alt="Sql Schema Visualizer" loading="lazy">
         <div class="framework-icon" title="Create React App">R</div>
-        <div class="status-dot" title="Read-only mirror"></div>
+        <div class="category-badge" style="background:#f59e0b22;border-color:#f59e0b66;color:#f59e0b">🎬 DEMO</div>
+        <button class="fav-btn" data-fav="4472d220aa6a" title="Bookmark">☆</button>
       </div>
       <div class="card-body">
         <div class="card-badges">
           <span class="badge badge-react">Create React App</span>
           <span class="badge badge-port">:3007</span>
-          <span class="badge badge-readme">README</span>
         </div>
         <div class="card-name">Sql Schema Visualizer</div>
         <div class="card-desc"></div>
       </div>
-      <div class="recovery-panel">
-        <div class="recovery-btns">
-          <a class="recovery-run node" href="https://github.com/sqlhabit/sql_schema_visualizer" target="_blank" rel="noopener" title="Node/JS app — clone &amp; run locally per README">▶ Run</a>
-          <a class="recovery-source" href="https://github.com/sqlhabit/sql_schema_visualizer" target="_blank" rel="noopener" title="Open repo on GitHub">🐙 Source</a>
-          <button class="recovery-clone" onclick="copyClone('https://github.com/sqlhabit/sql_schema_visualizer.git', event)" title="Copy git clone command">📋</button>
-        </div>
+      <div class="card-footer">
+        <a class="play-btn" href="#" data-demo="4472d220aa6a" data-name="Sql Schema Visualizer" data-framework="Create React App" data-category="DEMO" data-thumb="thumbnails/4472d220aa6a.png" data-desc="" data-install="React — clone, `npm install`, `npm start`" data-repo="https://github.com/sqlhabit/sql_schema_visualizer">▶ Play</a>
+        <a class="source-btn" href="https://github.com/sqlhabit/sql_schema_visualizer" target="_blank" rel="noopener" title="View source on GitHub">🐙</a>
       </div>
     </article>
 
-    <article class="card" data-name="super canvas app" data-framework="Vite">
+    <article class="card" data-id="85c367028d52" data-name="super canvas app" data-framework="Vite" data-category="LIVE">
       <div class="card-thumb">
         <img src="thumbnails/85c367028d52.png" alt="Super Canvas App" loading="lazy">
         <div class="framework-icon" title="Vite">V</div>
-        <div class="status-dot" title="Read-only mirror"></div>
+        <div class="category-badge" style="background:#22c55e22;border-color:#22c55e66;color:#22c55e">🟢 LIVE</div>
+        <button class="fav-btn" data-fav="85c367028d52" title="Bookmark">☆</button>
       </div>
       <div class="card-body">
         <div class="card-badges">
           <span class="badge badge-vite">Vite</span>
           <span class="badge badge-port">:5173</span>
-          <span class="badge badge-readme">README</span>
         </div>
         <div class="card-name">Super Canvas App</div>
         <div class="card-desc">This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.</div>
       </div>
-      <div class="recovery-panel">
-        <div class="recovery-btns">
-          <a class="recovery-run" href="https://lozturner.github.io/super-canvas-app/" target="_blank" rel="noopener" title="Opens live at https://lozturner.github.io/super-canvas-app/">▶ Run</a>
-          <a class="recovery-source" href="https://github.com/lozturner/super-canvas-app" target="_blank" rel="noopener" title="Open repo on GitHub">🐙 Source</a>
-          <button class="recovery-clone" onclick="copyClone('https://github.com/lozturner/super-canvas-app.git', event)" title="Copy git clone command">📋</button>
-        </div>
+      <div class="card-footer">
+        <a class="play-btn" href="https://lozturner.github.io/super-canvas-app/" target="_blank" rel="noopener" data-name="Super Canvas App" data-framework="Vite" data-category="LIVE" data-thumb="thumbnails/85c367028d52.png" data-desc="This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules." data-install="Vite — clone, `npm install`, `npm run dev`" data-repo="https://github.com/lozturner/super-canvas-app">▶ Play</a>
+        <a class="source-btn" href="https://github.com/lozturner/super-canvas-app" target="_blank" rel="noopener" title="View source on GitHub">🐙</a>
       </div>
     </article>
 
-    <article class="card" data-name="voice commander" data-framework="Python">
+    <article class="card" data-id="c3fa733b6848" data-name="voice commander" data-framework="Python" data-category="DEMO">
       <div class="card-thumb">
         <img src="thumbnails/c3fa733b6848.png" alt="Voice Commander" loading="lazy">
         <div class="framework-icon" title="Python">Py</div>
-        <div class="status-dot" title="Read-only mirror"></div>
+        <div class="category-badge" style="background:#f59e0b22;border-color:#f59e0b66;color:#f59e0b">🎬 DEMO</div>
+        <button class="fav-btn" data-fav="c3fa733b6848" title="Bookmark">☆</button>
       </div>
       <div class="card-body">
         <div class="card-badges">
           <span class="badge badge-python">Python</span>
           <span class="badge badge-port">:5111</span>
-          
         </div>
         <div class="card-name">Voice Commander</div>
         <div class="card-desc">Voice Commander — backend server.</div>
       </div>
-      <div class="recovery-panel">
-        <div class="recovery-btns">
-          <a class="recovery-run replit" href="https://replit.com/github/lozturner/voice-commander" target="_blank" rel="noopener" title="Opens a Python sandbox on Replit to fork &amp; run">▶ Run</a>
-          <a class="recovery-source" href="https://github.com/lozturner/voice-commander/blob/HEAD/server.py" target="_blank" rel="noopener" title="Open server.py on GitHub">🐙 Source</a>
-          <button class="recovery-clone" onclick="copyClone('https://github.com/lozturner/voice-commander.git', event)" title="Copy git clone command">📋</button>
-        </div>
+      <div class="card-footer">
+        <a class="play-btn" href="#" data-demo="c3fa733b6848" data-name="Voice Commander" data-framework="Python" data-category="DEMO" data-thumb="thumbnails/c3fa733b6848.png" data-desc="Voice Commander — backend server." data-install="Python — clone, then `python server.py`" data-repo="https://github.com/lozturner/voice-commander">▶ Play</a>
+        <a class="source-btn" href="https://github.com/lozturner/voice-commander" target="_blank" rel="noopener" title="View source on GitHub">🐙</a>
       </div>
     </article>
 
-    <article class="card" data-name="wait buddy" data-framework="Electron">
+    <article class="card" data-id="e3c7edaa10cd" data-name="wait buddy" data-framework="Electron" data-category="LIVE">
       <div class="card-thumb">
         <img src="thumbnails/e3c7edaa10cd.png" alt="Wait Buddy" loading="lazy">
         <div class="framework-icon" title="Electron">E</div>
-        <div class="status-dot" title="Read-only mirror"></div>
+        <div class="category-badge" style="background:#22c55e22;border-color:#22c55e66;color:#22c55e">🟢 LIVE</div>
+        <button class="fav-btn" data-fav="e3c7edaa10cd" title="Bookmark">☆</button>
       </div>
       <div class="card-body">
         <div class="card-badges">
           <span class="badge badge-electron">Electron</span>
           
-          <span class="badge badge-electron">Desktop</span>
         </div>
         <div class="card-name">Wait Buddy</div>
         <div class="card-desc">Electron project with desktop app</div>
       </div>
-      <div class="recovery-panel">
-        <div class="recovery-btns">
-          <a class="recovery-run" href="https://lozturner.github.io/wait-buddy/" target="_blank" rel="noopener" title="Opens live at https://lozturner.github.io/wait-buddy/">▶ Run</a>
-          <a class="recovery-source" href="https://github.com/lozturner/wait-buddy/blob/HEAD/main.js" target="_blank" rel="noopener" title="Open main.js on GitHub">🐙 Source</a>
-          <button class="recovery-clone" onclick="copyClone('https://github.com/lozturner/wait-buddy.git', event)" title="Copy git clone command">📋</button>
-        </div>
+      <div class="card-footer">
+        <a class="play-btn" href="https://lozturner.github.io/wait-buddy/" target="_blank" rel="noopener" data-name="Wait Buddy" data-framework="Electron" data-category="LIVE" data-thumb="thumbnails/e3c7edaa10cd.png" data-desc="Electron project with desktop app" data-install="Desktop app — clone, then `npm install &amp;&amp; npm start`" data-repo="https://github.com/lozturner/wait-buddy">▶ Play</a>
+        <a class="source-btn" href="https://github.com/lozturner/wait-buddy" target="_blank" rel="noopener" title="View source on GitHub">🐙</a>
       </div>
     </article>
 
-    <article class="card" data-name="whisper" data-framework="Python">
+    <article class="card" data-id="160fa921198c" data-name="whisper" data-framework="Python" data-category="LIVE">
       <div class="card-thumb">
         <img src="thumbnails/160fa921198c.png" alt="Whisper" loading="lazy">
         <div class="framework-icon" title="Python">Py</div>
-        <div class="status-dot" title="Read-only mirror"></div>
+        <div class="category-badge" style="background:#22c55e22;border-color:#22c55e66;color:#22c55e">🟢 LIVE</div>
+        <button class="fav-btn" data-fav="160fa921198c" title="Bookmark">☆</button>
       </div>
       <div class="card-body">
         <div class="card-badges">
           <span class="badge badge-python">Python</span>
           <span class="badge badge-port">:8781</span>
-          
         </div>
         <div class="card-name">Whisper</div>
         <div class="card-desc">Python app</div>
       </div>
-      <div class="recovery-panel">
-        <div class="recovery-btns">
-          <a class="recovery-run" href="https://lozturner.github.io/laurence-bring/" target="_blank" rel="noopener" title="Opens live at https://lozturner.github.io/laurence-bring/">▶ Run</a>
-          <a class="recovery-source" href="https://github.com/lozturner/laurence-bring/blob/HEAD/whisper-server.py" target="_blank" rel="noopener" title="Open whisper-server.py on GitHub">🐙 Source</a>
-          <button class="recovery-clone" onclick="copyClone('https://github.com/lozturner/laurence-bring.git', event)" title="Copy git clone command">📋</button>
-        </div>
+      <div class="card-footer">
+        <a class="play-btn" href="https://lozturner.github.io/laurence-bring/" target="_blank" rel="noopener" data-name="Whisper" data-framework="Python" data-category="LIVE" data-thumb="thumbnails/160fa921198c.png" data-desc="Python app" data-install="Python — clone, then `python whisper-server.py`" data-repo="https://github.com/lozturner/laurence-bring">▶ Play</a>
+        <a class="source-btn" href="https://github.com/lozturner/laurence-bring" target="_blank" rel="noopener" title="View source on GitHub">🐙</a>
       </div>
     </article>
 
-    <article class="card" data-name="wifi sentinel" data-framework="Python + Flask">
+    <article class="card" data-id="ea2d3051573a" data-name="wifi sentinel" data-framework="Python + Flask" data-category="DEMO">
       <div class="card-thumb">
         <img src="thumbnails/ea2d3051573a.png" alt="Wifi Sentinel" loading="lazy">
         <div class="framework-icon" title="Python + Flask">Py</div>
-        <div class="status-dot" title="Read-only mirror"></div>
+        <div class="category-badge" style="background:#f59e0b22;border-color:#f59e0b66;color:#f59e0b">🎬 DEMO</div>
+        <button class="fav-btn" data-fav="ea2d3051573a" title="Bookmark">☆</button>
       </div>
       <div class="card-body">
         <div class="card-badges">
           <span class="badge badge-python">Python + Flask</span>
           <span class="badge badge-port">:5001</span>
-          
         </div>
         <div class="card-name">Wifi Sentinel</div>
         <div class="card-desc">WiFi Sentinel - Entry Point</div>
       </div>
-      <div class="recovery-panel">
-        <div class="recovery-btns">
-          <a class="recovery-run replit" href="https://replit.com/github/lozturner/wifi-sentinel" target="_blank" rel="noopener" title="Opens a Python sandbox on Replit to fork &amp; run">▶ Run</a>
-          <a class="recovery-source" href="https://github.com/lozturner/wifi-sentinel/blob/HEAD/run.py" target="_blank" rel="noopener" title="Open run.py on GitHub">🐙 Source</a>
-          <button class="recovery-clone" onclick="copyClone('https://github.com/lozturner/wifi-sentinel.git', event)" title="Copy git clone command">📋</button>
-        </div>
+      <div class="card-footer">
+        <a class="play-btn" href="#" data-demo="ea2d3051573a" data-name="Wifi Sentinel" data-framework="Python + Flask" data-category="DEMO" data-thumb="thumbnails/ea2d3051573a.png" data-desc="WiFi Sentinel - Entry Point" data-install="Python server — clone, `pip install -r requirements.txt`, then `python app.py`" data-repo="https://github.com/lozturner/wifi-sentinel">▶ Play</a>
+        <a class="source-btn" href="https://github.com/lozturner/wifi-sentinel" target="_blank" rel="noopener" title="View source on GitHub">🐙</a>
       </div>
     </article>
 
-    <article class="card" data-name="winsim repo" data-framework="Python">
+    <article class="card" data-id="c4ec39255c4e" data-name="winsim repo" data-framework="Python" data-category="LIVE">
       <div class="card-thumb">
         <img src="thumbnails/c4ec39255c4e.png" alt="Winsim Repo" loading="lazy">
         <div class="framework-icon" title="Python">Py</div>
-        <div class="status-dot" title="Read-only mirror"></div>
+        <div class="category-badge" style="background:#22c55e22;border-color:#22c55e66;color:#22c55e">🟢 LIVE</div>
+        <button class="fav-btn" data-fav="c4ec39255c4e" title="Bookmark">☆</button>
       </div>
       <div class="card-body">
         <div class="card-badges">
           <span class="badge badge-python">Python</span>
           
-          <span class="badge badge-readme">README</span>
         </div>
         <div class="card-name">Winsim Repo</div>
         <div class="card-desc">A fake Windows desktop where you manage virtual processes, memory, and disk. Missions teach you how operating systems...</div>
       </div>
-      <div class="recovery-panel">
-        <div class="recovery-btns">
-          <a class="recovery-run" href="https://lozturner.github.io/task-manager-game/" target="_blank" rel="noopener" title="Opens live at https://lozturner.github.io/task-manager-game/">▶ Run</a>
-          <a class="recovery-source" href="https://github.com/lozturner/task-manager-game" target="_blank" rel="noopener" title="Open repo on GitHub">🐙 Source</a>
-          <button class="recovery-clone" onclick="copyClone('https://github.com/lozturner/task-manager-game.git', event)" title="Copy git clone command">📋</button>
-        </div>
+      <div class="card-footer">
+        <a class="play-btn" href="https://lozturner.github.io/task-manager-game/" target="_blank" rel="noopener" data-name="Winsim Repo" data-framework="Python" data-category="LIVE" data-thumb="thumbnails/c4ec39255c4e.png" data-desc="A fake Windows desktop where you manage virtual processes, memory, and disk. Missions teach you how operating systems..." data-install="Python — clone, then `python main.py`" data-repo="https://github.com/lozturner/task-manager-game">▶ Play</a>
+        <a class="source-btn" href="https://github.com/lozturner/task-manager-game" target="_blank" rel="noopener" title="View source on GitHub">🐙</a>
       </div>
     </article>
 
-    <article class="card" data-name="wishlist" data-framework="Python">
+    <article class="card" data-id="4439af92de44" data-name="wishlist" data-framework="Python" data-category="LIVE">
       <div class="card-thumb">
         <img src="thumbnails/4439af92de44.png" alt="Wishlist" loading="lazy">
         <div class="framework-icon" title="Python">Py</div>
-        <div class="status-dot" title="Read-only mirror"></div>
+        <div class="category-badge" style="background:#22c55e22;border-color:#22c55e66;color:#22c55e">🟢 LIVE</div>
+        <button class="fav-btn" data-fav="4439af92de44" title="Bookmark">☆</button>
       </div>
       <div class="card-body">
         <div class="card-badges">
           <span class="badge badge-python">Python</span>
           <span class="badge badge-port">:8773</span>
-          
         </div>
         <div class="card-name">Wishlist</div>
         <div class="card-desc">Python app</div>
       </div>
-      <div class="recovery-panel">
-        <div class="recovery-btns">
-          <a class="recovery-run" href="https://lozturner.github.io/laurence-bring/" target="_blank" rel="noopener" title="Opens live at https://lozturner.github.io/laurence-bring/">▶ Run</a>
-          <a class="recovery-source" href="https://github.com/lozturner/laurence-bring" target="_blank" rel="noopener" title="Open repo on GitHub">🐙 Source</a>
-          <button class="recovery-clone" onclick="copyClone('https://github.com/lozturner/laurence-bring.git', event)" title="Copy git clone command">📋</button>
-        </div>
+      <div class="card-footer">
+        <a class="play-btn" href="https://lozturner.github.io/laurence-bring/" target="_blank" rel="noopener" data-name="Wishlist" data-framework="Python" data-category="LIVE" data-thumb="thumbnails/4439af92de44.png" data-desc="Python app" data-install="Python — clone, then `python -m http.server 8773`" data-repo="https://github.com/lozturner/laurence-bring">▶ Play</a>
+        <a class="source-btn" href="https://github.com/lozturner/laurence-bring" target="_blank" rel="noopener" title="View source on GitHub">🐙</a>
       </div>
     </article>
 
-    <article class="card" data-name="wispr hook (system tray)" data-framework="Python">
+    <article class="card" data-id="e6c3aa69a194" data-name="wispr hook (system tray)" data-framework="Python" data-category="DEMO">
       <div class="card-thumb">
         <img src="thumbnails/e6c3aa69a194.png" alt="Wispr Hook (System Tray)" loading="lazy">
         <div class="framework-icon" title="Python">Py</div>
-        <div class="status-dot" title="Read-only mirror"></div>
+        <div class="category-badge" style="background:#f59e0b22;border-color:#f59e0b66;color:#f59e0b">🎬 DEMO</div>
+        <button class="fav-btn" data-fav="e6c3aa69a194" title="Bookmark">☆</button>
       </div>
       <div class="card-body">
         <div class="card-badges">
           <span class="badge badge-python">Python</span>
-          
           
         </div>
         <div class="card-name">Wispr Hook (System Tray)</div>
         <div class="card-desc">Python app — :?</div>
       </div>
-      <div class="recovery-panel">
-        <div class="recovery-btns">
-          <a class="recovery-run replit" href="https://replit.com/github/lozturner/laurence-wispr" target="_blank" rel="noopener" title="Opens a Python sandbox on Replit to fork &amp; run">▶ Run</a>
-          <a class="recovery-source" href="https://github.com/lozturner/laurence-wispr/blob/HEAD/wispr_hook.pyw" target="_blank" rel="noopener" title="Open wispr_hook.pyw on GitHub">🐙 Source</a>
-          <button class="recovery-clone" onclick="copyClone('https://github.com/lozturner/laurence-wispr.git', event)" title="Copy git clone command">📋</button>
-        </div>
+      <div class="card-footer">
+        <a class="play-btn" href="#" data-demo="e6c3aa69a194" data-name="Wispr Hook (System Tray)" data-framework="Python" data-category="DEMO" data-thumb="thumbnails/e6c3aa69a194.png" data-desc="Python app — :?" data-install="Python — clone, then `pythonw wispr_hook.pyw`" data-repo="https://github.com/lozturner/laurence-wispr">▶ Play</a>
+        <a class="source-btn" href="https://github.com/lozturner/laurence-wispr" target="_blank" rel="noopener" title="View source on GitHub">🐙</a>
       </div>
     </article>
 
-    <article class="card" data-name="woop" data-framework="Python">
+    <article class="card" data-id="cf2c22b71e0d" data-name="woop" data-framework="Python" data-category="LIVE">
       <div class="card-thumb">
         <img src="thumbnails/cf2c22b71e0d.png" alt="Woop" loading="lazy">
         <div class="framework-icon" title="Python">Py</div>
-        <div class="status-dot" title="Read-only mirror"></div>
+        <div class="category-badge" style="background:#22c55e22;border-color:#22c55e66;color:#22c55e">🟢 LIVE</div>
+        <button class="fav-btn" data-fav="cf2c22b71e0d" title="Bookmark">☆</button>
       </div>
       <div class="card-body">
         <div class="card-badges">
           <span class="badge badge-python">Python</span>
           <span class="badge badge-port">:8785</span>
-          
         </div>
         <div class="card-name">Woop</div>
         <div class="card-desc">Python app</div>
       </div>
-      <div class="recovery-panel">
-        <div class="recovery-btns">
-          <a class="recovery-run" href="https://lozturner.github.io/laurence-bring/" target="_blank" rel="noopener" title="Opens live at https://lozturner.github.io/laurence-bring/">▶ Run</a>
-          <a class="recovery-source" href="https://github.com/lozturner/laurence-bring" target="_blank" rel="noopener" title="Open repo on GitHub">🐙 Source</a>
-          <button class="recovery-clone" onclick="copyClone('https://github.com/lozturner/laurence-bring.git', event)" title="Copy git clone command">📋</button>
-        </div>
+      <div class="card-footer">
+        <a class="play-btn" href="https://lozturner.github.io/laurence-bring/" target="_blank" rel="noopener" data-name="Woop" data-framework="Python" data-category="LIVE" data-thumb="thumbnails/cf2c22b71e0d.png" data-desc="Python app" data-install="Python — clone, then `python -m http.server 8785`" data-repo="https://github.com/lozturner/laurence-bring">▶ Play</a>
+        <a class="source-btn" href="https://github.com/lozturner/laurence-bring" target="_blank" rel="noopener" title="View source on GitHub">🐙</a>
       </div>
     </article>
 
-    <article class="card" data-name="xampp" data-framework="XAMPP (Apache + MySQL)">
+    <article class="card" data-id="20ff97c98580" data-name="xampp" data-framework="XAMPP (Apache + MySQL)" data-category="VENDOR">
       <div class="card-thumb">
         <img src="thumbnails/20ff97c98580.png" alt="XAMPP" loading="lazy">
         <div class="framework-icon" title="XAMPP (Apache + MySQL)">X</div>
-        <div class="status-dot" title="Read-only mirror"></div>
+        <div class="category-badge" style="background:#6366f122;border-color:#6366f166;color:#6366f1">🌐 VENDOR</div>
+        <button class="fav-btn" data-fav="20ff97c98580" title="Bookmark">☆</button>
       </div>
       <div class="card-body">
         <div class="card-badges">
           <span class="badge badge-xampp">XAMPP (Apache + MySQL)</span>
           <span class="badge badge-port">:80</span><span class="badge badge-port">:443</span><span class="badge badge-port">:3306</span>
-          
         </div>
         <div class="card-name">XAMPP</div>
         <div class="card-desc">Apache + MySQL + PHP + Perl development stack</div>
       </div>
-      <div class="recovery-panel">
-        <div class="recovery-btns">
-          <a class="recovery-run node" href="https://www.apachefriends.org" target="_blank" rel="noopener" title="Vendored — opens the upstream project homepage">▶ Run</a>
-            <a class="recovery-source" href="https://www.apachefriends.org" target="_blank" rel="noopener" title="Upstream homepage">🐙 Source</a>
-        </div>
+      <div class="card-footer">
+        <a class="play-btn" href="https://www.apachefriends.org" target="_blank" rel="noopener" data-name="XAMPP" data-framework="XAMPP (Apache + MySQL)" data-category="VENDOR" data-thumb="thumbnails/20ff97c98580.png" data-desc="Apache + MySQL + PHP + Perl development stack" data-install="Clone the repo and follow its README" data-repo="">▶ Play</a>
+        
       </div>
     </article>
-  <div class="empty-state" id="emptyState" style="display:none">No projects match your search.</div>
+  <div class="empty" id="empty" style="display:none">No projects match.</div>
 </main>
 
 <footer>
   Baked 2026-04-21 · 55 projects ·
-  <a href="https://github.com/lozturner/laurence-localhost-v2">source on GitHub</a>
+  <a href="https://github.com/lozturner/laurence-localhost-v2" target="_blank">source</a>
 </footer>
 
+<!-- ─── LIGHTBOX ────────────────────────────────────────────── -->
+<div class="lightbox" id="lightbox">
+  <div class="lightbox-inner">
+    <div class="lightbox-img" id="lb-img"></div>
+    <div class="lightbox-info" id="lb-info"></div>
+  </div>
+  <button class="lightbox-close" onclick="closeLightbox()">✕</button>
+</div>
+
 <div class="toast" id="toast"></div>
+
 <script>
-  // Copy-to-clipboard helper for the "Clone" button on each card
-  async function copyClone(url, evt) {
-    if (evt) evt.stopPropagation();
-    const cmd = 'git clone ' + url;
-    try { await navigator.clipboard.writeText(cmd); } catch {
-      const ta = document.createElement('textarea');
-      ta.value = cmd; document.body.appendChild(ta); ta.select();
-      document.execCommand('copy'); ta.remove();
+  // ─── Login gate ─────────────────────────────────────────
+  const PW_HASH = 'dfb316701857783dac69a14d1fe3fd60cff21d56e830baf7f0e3871bd73eee39';
+  async function sha256(s) {
+    const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s));
+    return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+  }
+  async function tryLogin() {
+    const pw = document.getElementById('login-pw').value;
+    const h = await sha256(pw);
+    if (h === PW_HASH) {
+      sessionStorage.setItem('ltv2-auth', h);
+      document.getElementById('login-overlay').classList.add('hidden');
+    } else {
+      document.getElementById('login-err').textContent = 'Wrong password.';
     }
-    const t = document.getElementById('toast');
-    t.textContent = 'Copied: ' + cmd;
-    t.classList.add('visible');
-    clearTimeout(window._tt);
-    window._tt = setTimeout(() => t.classList.remove('visible'), 2200);
+  }
+  document.getElementById('login-pw').addEventListener('keydown', e => { if (e.key === 'Enter') tryLogin(); });
+  if (sessionStorage.getItem('ltv2-auth') === PW_HASH) {
+    document.getElementById('login-overlay').classList.add('hidden');
+  } else {
+    setTimeout(() => document.getElementById('login-pw').focus(), 100);
   }
 
-  // Client-side search + framework filter. No network calls — pure DOM work.
+  // ─── Filters ────────────────────────────────────────────
   const cards = Array.from(document.querySelectorAll('.card'));
-  const search = document.getElementById('searchInput');
-  const filter = document.getElementById('frameworkFilter');
-  const empty  = document.getElementById('emptyState');
+  const search = document.getElementById('search');
+  const fwFilter = document.getElementById('fw-filter');
+  const empty = document.getElementById('empty');
+  let activeCat = '';
+  let favOnly = false;
+
+  function getFavs() { try { return JSON.parse(localStorage.getItem('ltv2-favs')||'[]'); } catch { return []; } }
+  function setFavs(a) { localStorage.setItem('ltv2-favs', JSON.stringify(a)); }
+  function isFav(id) { return getFavs().includes(id); }
+
   function apply() {
     const q = search.value.trim().toLowerCase();
-    const f = filter.value;
+    const f = fwFilter.value;
+    const favs = getFavs();
     let visible = 0;
     for (const c of cards) {
       const name = c.dataset.name || '';
       const fw   = c.dataset.framework || '';
+      const cat  = c.dataset.category || '';
+      const id   = c.dataset.id;
       const okQ = !q || name.includes(q) || fw.toLowerCase().includes(q);
       const okF = !f || fw.includes(f);
-      const show = okQ && okF;
+      const okC = !activeCat || cat === activeCat;
+      const okFav = !favOnly || favs.includes(id);
+      const show = okQ && okF && okC && okFav;
       c.classList.toggle('hidden', !show);
       if (show) visible++;
     }
     empty.style.display = visible === 0 ? 'block' : 'none';
   }
+
   search.addEventListener('input', apply);
-  filter.addEventListener('change', apply);
+  fwFilter.addEventListener('change', apply);
+
+  // Category pill filter
+  document.querySelectorAll('.btn-pill[data-cat]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.btn-pill[data-cat]').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      activeCat = btn.dataset.cat;
+      apply();
+    });
+  });
+
+  // Favorites toggle
+  document.getElementById('fav-toggle').addEventListener('click', (e) => {
+    favOnly = !favOnly;
+    e.currentTarget.classList.toggle('active', favOnly);
+    e.currentTarget.innerHTML = favOnly ? '★ Favorites' : '☆ Favorites';
+    apply();
+  });
+
+  // Per-card bookmark stars
+  function paintFavs() {
+    const favs = getFavs();
+    document.querySelectorAll('.fav-btn').forEach(b => {
+      const id = b.dataset.fav;
+      const on = favs.includes(id);
+      b.classList.toggle('on', on);
+      b.textContent = on ? '★' : '☆';
+    });
+  }
+  document.querySelectorAll('.fav-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation(); e.preventDefault();
+      const id = btn.dataset.fav;
+      const favs = getFavs();
+      const i = favs.indexOf(id);
+      if (i >= 0) favs.splice(i, 1); else favs.push(id);
+      setFavs(favs);
+      paintFavs();
+      if (favOnly) apply();
+      toast(i >= 0 ? 'Removed from favorites' : '⭐ Added to favorites');
+    });
+  });
+  paintFavs();
+
+  // ─── Lightbox for DEMO category ─────────────────────────
+  function openLightbox(btn) {
+    const lb = document.getElementById('lightbox');
+    const imgBox = document.getElementById('lb-img');
+    const info = document.getElementById('lb-info');
+    const thumb = btn.dataset.thumb;
+    const name  = btn.dataset.name;
+    const fw    = btn.dataset.framework;
+    const desc  = btn.dataset.desc || '';
+    const install = btn.dataset.install || '';
+    const repo  = btn.dataset.repo || '';
+    imgBox.innerHTML = thumb
+      ? '<img src="' + thumb + '" alt="' + name + '">'
+      : '<div class="no-thumb">No thumbnail available yet. Run Snap All in the local dashboard.</div>';
+    info.innerHTML =
+      '<span class="cat-tag" style="background:rgba(245,158,11,0.15);border:1px solid rgba(245,158,11,0.4);color:#f59e0b">🎬 DEMO — needs local install to run</span>' +
+      '<h2>' + name + '</h2>' +
+      '<p><strong style="color:var(--text)">' + fw + '</strong></p>' +
+      (desc ? '<p>' + desc + '</p>' : '') +
+      '<div class="install-hint"><strong>How to run it</strong>' + install + '</div>' +
+      '<div class="lightbox-actions">' +
+        (repo ? '<a class="primary" href="' + repo + '" target="_blank" rel="noopener">🐙 View source</a>' : '') +
+        (repo ? '<a class="ghost" href="' + repo + '/archive/HEAD.zip">⬇ Download ZIP</a>' : '') +
+      '</div>';
+    lb.classList.add('open');
+  }
+  function closeLightbox() { document.getElementById('lightbox').classList.remove('open'); }
+  document.getElementById('lightbox').addEventListener('click', (e) => {
+    if (e.target.id === 'lightbox') closeLightbox();
+  });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeLightbox(); });
+
+  // Play button routing
+  document.querySelectorAll('.play-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      if (btn.dataset.demo) {
+        e.preventDefault();
+        openLightbox(btn);
+      }
+    });
+  });
+
+  // Toast helper
+  function toast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('visible');
+    clearTimeout(window._tt);
+    window._tt = setTimeout(() => t.classList.remove('visible'), 1800);
+  }
 </script>
 </body>
 </html>
