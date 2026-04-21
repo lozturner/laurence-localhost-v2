@@ -1,8 +1,0 @@
-node_modules/
-public/thumbnails/
-*.log
-.env
-.env.*
-!.env.example
-/data/
-pages-bake/

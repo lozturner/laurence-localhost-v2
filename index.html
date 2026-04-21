@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Laurence Localhost v2 — Turner Foundry (read-only mirror)</title>
+<style>
+  :root { --bg:#0a0a0f; --card:#12121a; --card-hi:#1a1a25; --text:#e2e8f0; --dim:#94a3b8;
+          --muted:#64748b; --accent:#6366f1; --foundry-a:#b45309; --foundry-b:#92400e;
+          --border:#1e293b; }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;
+         background:var(--bg); color:var(--text); min-height:100vh; line-height:1.45; }
+  header { padding:20px 28px; border-bottom:1px solid var(--border); background:#0f0f17; }
+  h1 { font-size:22px; font-weight:700; display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+  h1 .icon { color:var(--foundry-a); font-size:24px; }
+  h1 .accent { color:var(--accent); }
+  .foundry-badge { display:inline-block; padding:3px 10px; border-radius:4px; font-size:10px;
+    font-weight:700; background:linear-gradient(135deg,var(--foundry-a),var(--foundry-b));
+    color:#fef3c7; letter-spacing:1px; text-transform:uppercase; border:1px solid #78350f;
+    box-shadow:0 0 8px rgba(180,83,9,0.25); }
+  .ro-badge { display:inline-block; padding:3px 10px; border-radius:4px; font-size:10px;
+    font-weight:700; background:rgba(148,163,184,0.12); color:var(--dim);
+    letter-spacing:1px; text-transform:uppercase; border:1px solid var(--border); }
+  .banner { padding:14px 28px; background:rgba(180,83,9,0.07);
+    border-bottom:1px solid rgba(180,83,9,0.2); font-size:13px; color:#fcd34d; }
+  .banner strong { color:#fde68a; }
+  .banner code { background:rgba(0,0,0,0.35); padding:1px 6px; border-radius:3px; font-size:12px; }
+  main { padding:24px 28px; display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:14px; }
+  .card { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:16px;
+    transition:background 0.15s, border-color 0.15s; }
+  .card:hover { background:var(--card-hi); border-color:#334155; }
+  .badges { margin-bottom:8px; display:flex; flex-wrap:wrap; gap:6px; }
+  .badge { padding:2px 8px; border-radius:4px; font-size:11px; font-weight:600;
+    background:rgba(99,102,241,0.12); border:1px solid rgba(99,102,241,0.3); color:var(--accent); }
+  .card h3 { font-size:15px; margin-bottom:6px; color:var(--text); }
+  .card p { font-size:13px; color:var(--dim);
+    display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
+  .card p:empty::before { content:'—'; color:var(--muted); }
+  footer { padding:24px 28px; color:var(--muted); font-size:12px; text-align:center; border-top:1px solid var(--border); }
+  footer a { color:var(--accent); text-decoration:none; }
+  footer a:hover { text-decoration:underline; }
+</style>
+</head>
+<body>
+<header>
+  <h1>
+    <span class="icon">⚒</span> Laurence Localhost <span class="accent">v2</span>
+    <span class="foundry-badge">Turner Foundry</span>
+    <span class="ro-badge">Read-only mirror</span>
+  </h1>
+</header>
+<div class="banner">
+  <strong>This is a static snapshot.</strong> No live state, no paths, no ports, no controls.
+  The working registry runs locally on <code>localhost:4343</code>.
+</div>
+<main>
+    <article class="card">
+      <div class="badges"><span class="badge">Static HTML</span></div>
+      <h3>Ai Whack</h3>
+      <p>Static HTML app</p>
+    </article>
+    <article class="card">
+      <div class="badges"><span class="badge">Next.js + Prisma + Tailwind</span></div>
+      <h3>Ai Whack</h3>
+      <p>This is a Next.js project bootstrapped with create-next-app.</p>
+    </article>
+    <article class="card">
+      <div class="badges"><span class="badge">Python + pywebview</span></div>
+      <h3>Alexa Puck</h3>
+      <p>Python + pywebview project in alexa-puck</p>
+    </article>
+    <article class="card">
+      <div class="badges"><span class="badge">Electron</span></div>
+      <h3>Binman</h3>
+      <p>Mike the Bin Man — Voice session logger &amp; feedback recorder</p>
+    </article>
+    <article class="card">
+      <div class="badges"><span class="badge">Vite + Three.js</span></div>
+      <h3>Brain Sim</h3>
+      <p>Vite + Three.js project with 3D visualization</p>
+    </article>
+    <article class="card">
+      <div class="badges"><span class="badge">Python</span></div>
+      <h3>Circuit</h3>
+      <p>Python app</p>
+    </article>
+    <article class="card">
+      <div class="badges"><span class="badge">Python</span></div>
+      <h3>Claude Everywhere</h3>
+      <p>Python app</p>
+    </article>
+    <article class="card">
+      <div class="badges"><span class="badge">Electron</span></div>
+      <h3>Claude Home Hub</h3>
+      <p>Voice-activated home hub — Windows System.Speech, 100% local, no API keys</p>
+    </article>
+    <article class="card">
+      <div class="badges"><span class="badge">Electron</span></div>
+      <h3>Claude V1</h3>
+      <p>Claude v1 — Voice in, suggestions out, human in the loop</p>
+    </article>
+    <article class="card">
+      <div class="badges"><span class="badge">Python</span></div>
+      <h3>Desktop</h3>
+      <p>Python app</p>
+    </article>
+    <article class="card">
+      <div class="badges"><span class="badge">Electron</span></div>
+      <h3>Donner Pad</h3>
+      <p>Digital StarryPad — Donner MIDI pad controller clone for desktop automation</p>
+    </article>
+    <article class="card">
+      <div class="badges"><span class="badge">Python</span></div>
+      <h3>Fos</h3>
+      <p>Python app</p>
+    </article>
+    <article class="card">
+      <div class="badges"><span class="badge">Python</span></div>
+      <h3>Gpt Computer Assistant</h3>
+      <p>&lt;p align=&quot;center&quot;&gt;</p>
+    </article>
+    <article class="card">
+      <div class="badges"><span class="badge">Express</span></div>
+      <h3>Html Editor</h3>
+      <p>Express project in html-editor</p>
+    </article>
+    <article class="card">
+      <div class="badges"><span class="badge">Python</span></div>
+      <h3>Image Resolver</h3>
+      <p>Python app</p>
+    </article>
+    <article class="card">
+      <div class="badges"><span class="badge">Static HTML</span></div>
+      <h3>Laurence Biz</h3>
+      <p>Static HTML app</p>
+    </article>
+    <article class="card">
+      <div class="badges"><span class="badge">Next.js + Tailwind</span></div>
+      <h3>Laurence Biz</h3>
+      <p>This is a Next.js project bootstrapped with create-next-app.</p>
+    </article>
+    <article class="card">
+      <div class="badges"><span class="badge">Static HTML</span></div>
+      <h3>Laurence Lens</h3>
+      <p>Static HTML app</p>
+    </article>
+    <article class="card">
+      <div class="badges"><span class="badge">Next.js + Tailwind</span></div>
+      <h3>Laurence Lens</h3>
+      <p>This is a Next.js project bootstrapped with create-next-app.</p>
+    </article>
+    <article class="card">
+      <div class="badges"><span class="badge">Python</span></div>
+      <h3>Laurence Voice Control</h3>
+      <p>Python project in Laurence voice control</p>
+    </article>
+    <article class="card">
+      <div class="badges"><span class="badge">Static HTML</span></div>
+      <h3>Laurence Watchers</h3>
+      <p>Static HTML project in Laurence Watchers</p>
+    </article>
+    <article class="card">
+      <div class="badges"><span class="badge">Python + pywebview</span></div>
+      <h3>Laurence Windows Chatbot</h3>
+      <p>Python + pywebview project in laurence windows chatbot</p>
+    </article>
+    <article class="card">
+      <div class="badges"><span class="badge">Static HTML</span></div>
+      <h3>LawrenceBeatYourselfUp.Com</h3>
+      <p>Static HTML project in LawrenceBeatYourselfUp.com</p>
+    </article>
+    <article class="card">
+      <div class="badges"><span class="badge">Python + Django</span></div>
+      <h3>LLMStack</h3>
+      <p>&lt;p align=&quot;center&quot;&gt;</p>
+    </article>
+    <article class="card">
+      <div class="badges"><span class="badge">Electron + Express</span></div>
+      <h3>Localhost Phonebook</h3>
+      <p>Dashboard for all localhost development projects</p>
+    </article>
+    <article class="card">
+      <div class="badges"><span class="badge">Python</span></div>
+      <h3>Loz Pipeline (Flask)</h3>
+      <p>Python app</p>
+    </article>
+    <article class="card">
+      <div class="badges"><span class="badge">Electron</span></div>
+      <h3>Movie Magic</h3>
+      <p>Movie Magic — Presentation translator for neurodivergent speakers. Verbose to punchy.</p>
+    </article>
+    <article class="card">
+      <div class="badges"><span class="badge">Create React App</span></div>
+      <h3>My React App</h3>
+      <p>This project was bootstrapped with Create React App.</p>
+    </article>
+    <article class="card">
+      <div class="badges"><span class="badge">Node.js</span></div>
+      <h3>Niggly Machine</h3>
+      <p>&lt;p align=&quot;center&quot;&gt; &lt;img src=&quot;https://img.shields.io/badge/Python-3.11+-3776AB?style=for-the-badge&amp;logo=python&amp;logoColor=white&quot; /&gt; &lt;img src=&quot;https://img.shields.io/badge/Pla</p>
+    </article>
+    <article class="card">
+      <div class="badges"><span class="badge">Static HTML</span></div>
+      <h3>Node Http Server</h3>
+      <p>Static HTML app</p>
+    </article>
+    <article class="card">
+      <div class="badges"><span class="badge">Node-RED</span></div>
+      <h3>Node-RED</h3>
+      <p>Flow-based automation and IoT platform</p>
+    </article>
+    <article class="card">
+      <div class="badges"><span class="badge">Express</span></div>
+      <h3>Org Sim</h3>
+      <p>Express project in org-sim</p>
+    </article>
+    <article class="card">
+      <div class="badges"><span class="badge">Python</span></div>
+      <h3>Personal Ai System</h3>
+      <p>A reusable CSS JS animation system designed for ADHD-friendly micro-interactions. Drop into any project.</p>
+    </article>
+    <article class="card">
+      <div class="badges"><span class="badge">Python</span></div>
+      <h3>Picture Finder</h3>
+      <p>Python app</p>
+    </article>
+    <article class="card">
+      <div class="badges"><span class="badge">Python</span></div>
+      <h3>Prompt Forge</h3>
+      <p>Python app</p>
+    </article>
+    <article class="card">
+      <div class="badges"><span class="badge">Python</span></div>
+      <h3>Python Static</h3>
+      <p>Python app</p>
+    </article>
+    <article class="card">
+      <div class="badges"><span class="badge">Electron</span></div>
+      <h3>Sandra</h3>
+      <p>Sandra — Voice-activated desktop app launcher</p>
+    </article>
+    <article class="card">
+      <div class="badges"><span class="badge">Python</span></div>
+      <h3>Sea Lion</h3>
+      <p>Python app</p>
+    </article>
+    <article class="card">
+      <div class="badges"><span class="badge">Python</span></div>
+      <h3>See Ahead Map</h3>
+      <p>Python app</p>
+    </article>
+    <article class="card">
+      <div class="badges"><span class="badge">Python</span></div>
+      <h3>See Ahead Setup</h3>
+      <p>Python app</p>
+    </article>
+    <article class="card">
+      <div class="badges"><span class="badge">Python</span></div>
+      <h3>Sentinel Bar</h3>
+      <p>Python project in sentinel-bar</p>
+    </article>
+    <article class="card">
+      <div class="badges"><span class="badge">Python</span></div>
+      <h3>Spend Chat</h3>
+      <p>Python app</p>
+    </article>
+    <article class="card">
+      <div class="badges"><span class="badge">Python</span></div>
+      <h3>Spend Dashboard</h3>
+      <p>Python app</p>
+    </article>
+    <article class="card">
+      <div class="badges"><span class="badge">Python</span></div>
+      <h3>Spend Watch</h3>
+      <p>Python app</p>
+    </article>
+    <article class="card">
+      <div class="badges"><span class="badge">Create React App</span></div>
+      <h3>Sql Schema Visualizer</h3>
+      <p>&lt;div align=&quot;center&quot;&gt;</p>
+    </article>
+    <article class="card">
+      <div class="badges"><span class="badge">Vite</span></div>
+      <h3>Super Canvas App</h3>
+      <p>This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.</p>
+    </article>
+    <article class="card">
+      <div class="badges"><span class="badge">Python</span></div>
+      <h3>Voice Commander</h3>
+      <p>Voice Commander — backend server.</p>
+    </article>
+    <article class="card">
+      <div class="badges"><span class="badge">Electron</span></div>
+      <h3>Wait Buddy</h3>
+      <p>Electron project with desktop app</p>
+    </article>
+    <article class="card">
+      <div class="badges"><span class="badge">Python</span></div>
+      <h3>Whisper</h3>
+      <p>Python app</p>
+    </article>
+    <article class="card">
+      <div class="badges"><span class="badge">Python + Flask</span></div>
+      <h3>Wifi Sentinel</h3>
+      <p>WiFi Sentinel - Entry Point</p>
+    </article>
+    <article class="card">
+      <div class="badges"><span class="badge">Python</span></div>
+      <h3>Winsim Repo</h3>
+      <p>A fake Windows desktop where you manage virtual processes, memory, and disk. Missions teach you how operating systems...</p>
+    </article>
+    <article class="card">
+      <div class="badges"><span class="badge">Python</span></div>
+      <h3>Wishlist</h3>
+      <p>Python app</p>
+    </article>
+    <article class="card">
+      <div class="badges"><span class="badge">Python</span></div>
+      <h3>Wispr Hook (System Tray)</h3>
+      <p>Python app — :?</p>
+    </article>
+    <article class="card">
+      <div class="badges"><span class="badge">Python</span></div>
+      <h3>Woop</h3>
+      <p>Python app</p>
+    </article>
+    <article class="card">
+      <div class="badges"><span class="badge">XAMPP (Apache + MySQL)</span></div>
+      <h3>XAMPP</h3>
+      <p>Apache + MySQL + PHP + Perl development stack</p>
+    </article>
+</main>
+<footer>Baked 2026-04-21 · 55 projects · <a href="https://github.com/lozturner/laurence-localhost-v2">source on GitHub</a></footer>
+</body>
+</html>
