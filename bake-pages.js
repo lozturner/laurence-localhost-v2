@@ -22,20 +22,30 @@ http.get('http://127.0.0.1:4343/api/projects', (res) => {
 
     const safe = projects
       .filter(p => !/telegram/i.test((p.path || '') + ' ' + (p.name || '') + ' ' + (p.framework || '')))
-      .map(p => ({
-        id: p.id,
-        name: p.name || '',
-        framework: p.framework || 'Unknown',
-        ports: Array.isArray(p.ports) ? p.ports.slice(0, 4) : [],
-        description: cleanDesc(p.description),
-        electronApp: !!p.electronApp,
-        dockerCompose: !!p.dockerCompose,
-        pythonProject: !!p.pythonProject,
-        hasReadme: !!p.hasReadme,
-        hasThumb: fs.existsSync(path.join(THUMBS_IN, `${p.id}.png`)),
-        // Probe .git/config for a remote URL so Pages buttons can link out
-        githubUrl: readGithubRemote(p.path),
-      }));
+      .map(p => {
+        const repoUrl = readGithubRemote(p.path) || UPSTREAM_URL[p.framework] || null;
+        const entry = findEntryFile(p.path, p.name, p.startCommand, p.entryFile);
+        // If the entry file is known AND we have a repo URL, point View Source at the file
+        const sourceUrl = (repoUrl && !/^https?:\/\/(nodered\.org|www\.apachefriends)/.test(repoUrl) && entry)
+          ? `${repoUrl}/blob/HEAD/${encodeURI(entry)}`
+          : repoUrl;
+        return {
+          id: p.id,
+          name: p.name || '',
+          framework: p.framework || 'Unknown',
+          ports: Array.isArray(p.ports) ? p.ports.slice(0, 4) : [],
+          description: cleanDesc(p.description),
+          electronApp: !!p.electronApp,
+          dockerCompose: !!p.dockerCompose,
+          pythonProject: !!p.pythonProject,
+          hasReadme: !!p.hasReadme,
+          hasThumb: fs.existsSync(path.join(THUMBS_IN, `${p.id}.png`)),
+          githubUrl: repoUrl,
+          sourceUrl,                // deep link to the specific file when possible
+          entryFile: entry,         // e.g. "fos.html"
+          isUpstream: !!(UPSTREAM_URL[p.framework] && !readGithubRemote(p.path)),
+        };
+      });
 
     // Prep output dir — wipe pages-bake clean each run for deterministic diffs
     fs.rmSync(OUT, { recursive: true, force: true });
@@ -64,6 +74,38 @@ http.get('http://127.0.0.1:4343/api/projects', (res) => {
   console.error('bake failed — is v2 running on :4343?', e.message);
   process.exit(1);
 });
+
+// Third-party vendored apps — link to their upstream homepage instead of a repo
+const UPSTREAM_URL = {
+  'Node-RED': 'https://nodered.org',
+  'XAMPP (Apache + MySQL)': 'https://www.apachefriends.org',
+};
+
+// Given the project root, name, and startCommand, guess the specific entry file
+// so sibling projects inside a shared parent folder each get a deep link.
+function findEntryFile(projectPath, name, startCommand, explicitEntry) {
+  if (!projectPath) return null;
+  const exists = (rel) => {
+    try { return fs.existsSync(path.join(projectPath, rel)); } catch { return false; }
+  };
+  if (explicitEntry && exists(explicitEntry)) return explicitEntry.replace(/\\/g, '/');
+
+  // 1. Parse startCommand for an explicit filename token
+  if (startCommand) {
+    const m = startCommand.match(/([A-Za-z0-9_\-\/\\\.]+\.(?:html|py|pyw|js|mjs|cjs|ts|jsx|tsx))\b/);
+    if (m && exists(m[1])) return m[1].replace(/\\/g, '/');
+  }
+  // 2. Slug-based file match in the project root
+  const slug = (name || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+  if (slug) {
+    for (const ext of ['.html', '.py', '.pyw', '.js', '.mjs']) {
+      if (exists(slug + ext)) return slug + ext;
+    }
+    // Folder-style project ("laurence-lens" subfolder inside parent)
+    if (exists(slug)) return slug;
+  }
+  return null;
+}
 
 // Read a project folder's .git/config → normalised https GitHub URL, or null
 function readGithubRemote(projectPath) {
@@ -149,6 +191,26 @@ function frameworkIcon(fw) {
   return '?';
 }
 
+function buildActions(p) {
+  // Upstream / vendored → just a "Visit" link to the upstream homepage
+  if (p.isUpstream && p.githubUrl) {
+    return `<a class="recovery-open" href="${esc(p.githubUrl)}" target="_blank" rel="noopener" title="Upstream project homepage">🌐 Visit ${esc(p.framework.split(/\s*\+\s*/)[0])}</a>
+            <button class="recovery-term" disabled title="Vendored / third-party — installed locally, not Laurence's source">⬜ Vendored</button>`;
+  }
+  // Has GitHub → three live actions, deep-linked to entry file when known
+  if (p.githubUrl) {
+    const primary = p.sourceUrl || p.githubUrl;
+    const primaryLabel = p.entryFile ? `🐙 Open ${esc(p.entryFile.split('/').pop())}` : '🐙 View Source';
+    const primaryTitle = p.entryFile ? `Open ${p.entryFile} on GitHub` : 'Open source on GitHub';
+    return `<a class="recovery-open" href="${esc(primary)}" target="_blank" rel="noopener" title="${primaryTitle}">${primaryLabel}</a>
+            <a class="recovery-start" href="${esc(p.githubUrl)}/archive/HEAD.zip" title="Download ZIP of default branch">⬇ ZIP</a>
+            <button class="recovery-term" onclick="copyClone('${esc(p.githubUrl)}.git', event)" title="Copy git clone command">📋 Clone</button>`;
+  }
+  // No remote at all
+  return `<button class="recovery-open" disabled title="Not yet uploaded to GitHub — lives locally only">⊘ Not on GitHub</button>
+          <button class="recovery-term" disabled title="Mirror only">⬜ Terminal</button>`;
+}
+
 function renderCard(p) {
   const portBadges = p.ports
     .map(port => `<span class="badge badge-port">:${port}</span>`)
@@ -183,12 +245,7 @@ function renderCard(p) {
       </div>
       <div class="recovery-panel">
         <div class="recovery-btns">
-          ${p.githubUrl
-            ? `<a class="recovery-open" href="${esc(p.githubUrl)}" target="_blank" rel="noopener" title="Open source on GitHub">🐙 View Source</a>
-               <a class="recovery-start" href="${esc(p.githubUrl)}/archive/HEAD.zip" title="Download ZIP of default branch">⬇ ZIP</a>
-               <button class="recovery-term" onclick="copyClone('${esc(p.githubUrl)}.git', event)" title="Copy git clone command">📋 Clone</button>`
-            : `<button class="recovery-open" disabled title="Not yet uploaded to GitHub — lives locally only">⊘ Not on GitHub</button>
-               <button class="recovery-term" disabled title="Mirror only">⬜ Terminal</button>`}
+          ${buildActions(p)}
         </div>
       </div>
     </article>`;
